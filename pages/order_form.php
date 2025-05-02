@@ -93,11 +93,23 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                 </div>
 
                     
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3">
-                        <?php foreach ($models as $model): ?>
-                            <div class="col">
+                    <div class="mb-3">
+                    <input type="text" class="form-control" id="templateSearch" placeholder="Buscar modelos..." onkeyup="filterTemplates()">
+                </div>
+                
+                <div class="row row-cols-1 row-cols-sm-2 g-3 template-grid">
+                        <?php 
+                        $itemsPerPage = 4;
+                        $totalPages = ceil(count($models) / $itemsPerPage);
+                        $currentPage = 1;
+                        
+                        foreach ($models as $index => $model): 
+                            $isVisible = $index < $itemsPerPage ? '' : 'style="display: none;"';
+                        ?>
+                            <div class="col template-item" <?php echo $isVisible; ?>>
                                 <div class="card model-card h-100 <?php echo ($isEditing && $order['model_id'] == $model['id']) ? 'selected' : ''; ?>" 
-                                     data-model-id="<?php echo $model['id']; ?>">
+                                     data-model-id="<?php echo $model['id']; ?>"
+                                     data-name="<?php echo strtolower(htmlspecialchars($model['name'])); ?>">
                                     <div class="card-body p-2 text-center">
                                         <img src="<?php echo htmlspecialchars($model['image_url']); ?>" 
                                              alt="<?php echo htmlspecialchars($model['name']); ?>" 
@@ -109,6 +121,11 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                         <?php endforeach; ?>
                     </div>
                     <div class="invalid-feedback">Por favor, selecione um modelo.</div>
+                    <div class="d-flex justify-content-center mt-3 pagination-controls">
+                        <button class="btn btn-outline-secondary me-2" onclick="changePage('prev')" id="prevBtn">Anterior</button>
+                        <span class="align-self-center mx-2" id="pageInfo">Página 1 de <?php echo $totalPages; ?></span>
+                        <button class="btn btn-outline-secondary ms-2" onclick="changePage('next')" id="nextBtn">Próximo</button>
+                    </div>
                 </div>
                 
                 <!-- Metal Type -->
@@ -177,6 +194,53 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
 </div>
 
 <script>
+let currentPage = 1;
+const itemsPerPage = 4;
+const totalItems = <?php echo count($models); ?>;
+const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+function filterTemplates() {
+    const searchText = document.getElementById('templateSearch').value.toLowerCase();
+    const templates = document.querySelectorAll('.template-item');
+    let visibleCount = 0;
+    
+    templates.forEach(template => {
+        const name = template.querySelector('.model-card').getAttribute('data-name');
+        if (name.includes(searchText)) {
+            template.style.display = '';
+            visibleCount++;
+        } else {
+            template.style.display = 'none';
+        }
+    });
+}
+
+function changePage(direction) {
+    const templates = document.querySelectorAll('.template-item');
+    
+    if (direction === 'next' && currentPage < totalPages) {
+        currentPage++;
+    } else if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+    }
+    
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    
+    templates.forEach((template, index) => {
+        template.style.display = (index >= start && index < end) ? '' : 'none';
+    });
+    
+    document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+    document.getElementById('prevBtn').disabled = currentPage === 1;
+    document.getElementById('nextBtn').disabled = currentPage === totalPages;
+}
+
+// Initialize pagination
+document.addEventListener('DOMContentLoaded', function() {
+    changePage('current');
+});
+
 // Form validation script
 (function() {
     'use strict';
