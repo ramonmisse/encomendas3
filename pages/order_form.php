@@ -97,7 +97,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                     <input type="text" class="form-control" id="templateSearch" placeholder="Buscar modelos..." onkeyup="filterTemplates()">
                     </div>
 
-                    <div class="row row-cols-1 row-cols-sm-2 g-3 template-grid">
+                    <div class="row row-cols-4 g-3 template-grid">
                         <?php 
                         $itemsPerPage = 4;
                         $totalPages = ceil(count($models) / $itemsPerPage);
