@@ -34,11 +34,11 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                 <?php if ($isEditing): ?>
                     <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
                 <?php endif; ?>
-                
+
                 <div class="row mb-4">
                     <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
                     <input type="hidden" name="company_id" value="<?php echo $_SESSION['company_id']; ?>">
-                    
+
                     <!-- Client Name -->
                     <div class="col-md-6 mb-3">
                         <label for="clientName" class="form-label">Nome do Cliente</label>
@@ -47,7 +47,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                                placeholder="Digite o nome do cliente" required>
                         <div class="invalid-feedback">Por favor, informe o nome do cliente.</div>
                     </div>
-                    
+
                     <!-- Order Date (Read-only) -->
                     <div class="col-md-6 mb-3">
                         <label for="orderDate" class="form-label">Data do Pedido</label>
@@ -55,7 +55,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                                value="<?php echo date('d/m/Y H:i'); ?>" readonly>
                         <small class="text-muted">Data e hora atuais (definidas automaticamente)</small>
                     </div>
-                    
+
                     <!-- Delivery Date -->
                     <div class="col-md-6 mb-3">
                         <label for="deliveryDate" class="form-label">Data e Hora de Entrega</label>
@@ -73,7 +73,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                         <div class="invalid-feedback">Por favor, selecione uma data e hora de entrega válida.</div>
                     </div>
                 </div>
-                
+
                 <!-- Product Model Selection -->
                 <div class="mb-4">
                     <label class="form-label">Modelo do Produto</label>
@@ -92,17 +92,17 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                     </select>
                 </div>
 
-                    
+
                     <div class="mb-3">
                     <input type="text" class="form-control" id="templateSearch" placeholder="Buscar modelos..." onkeyup="filterTemplates()">
                 </div>
-                
+
                 <div class="row row-cols-1 row-cols-sm-2 g-3 template-grid">
                         <?php 
                         $itemsPerPage = 4;
                         $totalPages = ceil(count($models) / $itemsPerPage);
                         $currentPage = 1;
-                        
+
                         foreach ($models as $index => $model): 
                             $isVisible = $index < $itemsPerPage ? '' : 'style="display: none;"';
                         ?>
@@ -127,7 +127,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                         <button class="btn btn-outline-secondary ms-2" onclick="changePage('next')" id="nextBtn">Próximo</button>
                     </div>
                 </div>
-                
+
                 <!-- Metal Type -->
                 <div class="mb-4">
                     <label for="metalType" class="form-label">Tipo de Metal</label>
@@ -139,7 +139,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                     </select>
                     <div class="invalid-feedback">Por favor, selecione um tipo de metal.</div>
                 </div>
-                
+
                 <!-- Image Upload -->
                 <div class="mb-4">
                     <label class="form-label">Fotos de Personalização</label>
@@ -150,7 +150,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                         <input type="file" class="form-control" id="image-upload" name="images[]" multiple accept="image/*">
                     </div>
                     <small class="text-muted">Você pode selecionar várias imagens.</small>
-                    
+
                     <!-- Image preview container -->
                     <div class="row mt-3" id="image-preview-container">
                         <?php if ($isEditing && isset($order['image_urls'])): ?>
@@ -174,14 +174,14 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                         <?php endif; ?>
                     </div>
                 </div>
-                
+
                 <!-- Notes -->
                 <div class="mb-4">
                     <label for="notes" class="form-label">Observações</label>
                     <textarea class="form-control" id="notes" name="notes" rows="4" 
                               placeholder="Adicione informações adicionais sobre o pedido"><?php echo $isEditing ? htmlspecialchars($order['notes']) : ''; ?></textarea>
                 </div>
-                
+
                 <!-- Submit Button -->
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary">
@@ -193,6 +193,18 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
     </div>
 </div>
 
+<style>
+.model-image {
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
+  max-width: 200px;
+  max-height: 200px;
+  width: 100%;
+}
+</style>
+
 <script>
 let currentPage = 1;
 const itemsPerPage = 4;
@@ -203,7 +215,7 @@ function filterTemplates() {
     const searchText = document.getElementById('templateSearch').value.toLowerCase();
     const templates = document.querySelectorAll('.template-item');
     let visibleCount = 0;
-    
+
     templates.forEach(template => {
         const name = template.querySelector('.model-card').getAttribute('data-name');
         if (name.includes(searchText)) {
@@ -217,20 +229,20 @@ function filterTemplates() {
 
 function changePage(direction) {
     const templates = document.querySelectorAll('.template-item');
-    
+
     if (direction === 'next' && currentPage < totalPages) {
         currentPage++;
     } else if (direction === 'prev' && currentPage > 1) {
         currentPage--;
     }
-    
+
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    
+
     templates.forEach((template, index) => {
         template.style.display = (index >= start && index < end) ? '' : 'none';
     });
-    
+
     document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
     document.getElementById('prevBtn').disabled = currentPage === 1;
     document.getElementById('nextBtn').disabled = currentPage === totalPages;
@@ -244,14 +256,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Form validation script
 (function() {
     'use strict';
-    
+
     // Fetch all forms we want to apply validation to
     var forms = document.querySelectorAll('.needs-validation');
-    
+
     // Model card selection
     var modelCards = document.querySelectorAll('.model-card');
     var modelInput = document.getElementById('modelInput');
-    
+
     // Add click event to model cards
     modelCards.forEach(function(card) {
         card.addEventListener('click', function() {
@@ -265,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modelInput.value = this.getAttribute('data-model-id');
         });
     });
-    
+
     // Loop over forms and prevent submission
     Array.prototype.slice.call(forms).forEach(function(form) {
         form.addEventListener('submit', function(event) {
@@ -276,12 +288,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show validation message
                 modelInput.parentElement.querySelector('.invalid-feedback').style.display = 'block';
             }
-            
+
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            
+
             form.classList.add('was-validated');
         }, false);
     });
