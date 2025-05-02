@@ -95,9 +95,9 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
 
                     <div class="mb-3">
                     <input type="text" class="form-control" id="templateSearch" placeholder="Buscar modelos..." onkeyup="filterTemplates()">
-                </div>
+                    </div>
 
-                <div class="row row-cols-1 row-cols-sm-2 g-3 template-grid">
+                    <div class="row row-cols-1 row-cols-sm-2 g-3 template-grid">
                         <?php 
                         $itemsPerPage = 4;
                         $totalPages = ceil(count($models) / $itemsPerPage);
@@ -194,6 +194,19 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
 </div>
 
 <style>
+.model-card {
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.model-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.model-card.selected {
+  border-color: #0d6efd;
+}
+
 .model-image {
   aspect-ratio: 1/1;
   object-fit: cover;
