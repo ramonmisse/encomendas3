@@ -5,9 +5,7 @@ $filters = [
     'end_date' => isset($_GET['end_date']) ? $_GET['end_date'] : '',
     'model_id' => isset($_GET['model_id']) ? $_GET['model_id'] : '',
     'status' => isset($_GET['status']) ? $_GET['status'] : '',
-    'company_id' => ($_SESSION['role'] === 'admin' && isset($_GET['company_id'])) ? $_GET['company_id'] : $_SESSION['company_id'],
-    'client' => isset($_GET['client']) ? $_GET['client'] : '',
-    'order_id' => isset($_GET['order_id']) ? $_GET['order_id'] : ''
+    'company_id' => ($_SESSION['role'] === 'admin' && isset($_GET['company_id'])) ? $_GET['company_id'] : $_SESSION['company_id']
 ];
 
 // Get companies for admin filter
@@ -16,11 +14,8 @@ if ($_SESSION['role'] === 'admin') {
     $companies = $pdo->query("SELECT * FROM companies ORDER BY name")->fetchAll();
 }
 
-// Fetch orders from database with filters and pagination
-$page_num = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
-$orders = getOrders($pdo, $filters, $page_num);
-
-
+// Fetch orders from database with filters
+$orders = getOrders($pdo, $filters);
 ?>
 
 <div class="card mb-4">
@@ -75,10 +70,6 @@ $orders = getOrders($pdo, $filters, $page_num);
                 </select>
             </div>
             <?php endif; ?>
-            <div class="col-md-3">
-                <label for="client" class="form-label">Cliente</label>
-                <input type="text" class="form-control" id="client" name="client" value="<?php echo htmlspecialchars($filters['client']); ?>">
-            </div>
             <div class="col-md-2 d-flex align-items-end">
                 <div class="d-flex gap-2 w-100">
                     <button type="submit" class="btn btn-primary flex-grow-1">
@@ -102,7 +93,6 @@ $orders = getOrders($pdo, $filters, $page_num);
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Criado por</th>
                         <th>Cliente</th>
                         <th>Modelo</th>
@@ -114,16 +104,15 @@ $orders = getOrders($pdo, $filters, $page_num);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($orders['data'])): ?>
+                    <?php if (empty($orders)): ?>
                         <tr>
                             <td colspan="7" class="text-center py-4">
                                 <p class="text-muted mb-0">Nenhum pedido encontrado. Crie um novo pedido para começar.</p>
                             </td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($orders['data'] as $order): ?>
+                        <?php foreach ($orders as $order): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($order['id']); ?></td>
                                 <td><?php echo htmlspecialchars($order['username'] ?? 'N/A'); ?></td>
                                 <td><?php echo isset($order['client']) ? htmlspecialchars($order['client']) : 'N/A'; ?></td>
                                 <td><?php echo htmlspecialchars($order['model']); ?></td>
@@ -214,28 +203,6 @@ $orders = getOrders($pdo, $filters, $page_num);
                     <?php endif; ?>
                 </tbody>
             </table>
-
-            <?php if (isset($orders['pages']) && $orders['pages'] > 1): ?>
-            <div class="d-flex justify-content-center mt-4">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <?php 
-                        $currentPage = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
-                        for ($i = 1; $i <= $orders['pages']; $i++): 
-                        ?>
-                        <li class="page-item <?php echo $currentPage === $i ? 'active' : ''; ?>">
-                            <a class="page-link" href="?page=order_listing&page_num=<?php echo $i; ?><?php 
-                                echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : '';
-                                echo isset($_GET['client']) ? '&client=' . htmlspecialchars($_GET['client']) : '';
-                                echo isset($_GET['model_id']) ? '&model_id=' . htmlspecialchars($_GET['model_id']) : '';
-                                echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : '';
-                            ?>"><?php echo $i; ?></a>
-                        </li>
-                        <?php endfor; ?>
-                    </ul>
-                </nav>
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 </div>
