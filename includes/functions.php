@@ -8,12 +8,12 @@
  */
 function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
     try {
-        $where = [];
+        $where = ["1=1"];
         $params = [];
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
 
-        error_log("Starting getOrders execution");
+        error_log("Starting getOrders execution with page: " . $page . ", perPage: " . $perPage);
 
         // Add company filter
         if (!empty($filters['company_id'])) {
