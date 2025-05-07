@@ -1,10 +1,12 @@
 <?php
-// Get filter parameters with sanitization
+session_start();
+
+// Improved filters with proper sanitization
 $filters = [
-    'start_date' => htmlspecialchars(filter_input(INPUT_GET, 'start_date') ?: ''),
-    'end_date' => htmlspecialchars(filter_input(INPUT_GET, 'end_date') ?: ''),
-    'model_id' => filter_input(INPUT_GET, 'model_id', FILTER_VALIDATE_INT) ?: '',
-    'status' => htmlspecialchars(filter_input(INPUT_GET, 'status') ?: ''),
+    'start_date' => filter_input(INPUT_GET, 'start_date', FILTER_SANITIZE_SPECIAL_CHARS) ?: '',
+    'end_date'   => filter_input(INPUT_GET, 'end_date',   FILTER_SANITIZE_SPECIAL_CHARS) ?: '',
+    'model_id'   => filter_input(INPUT_GET, 'model_id',   FILTER_VALIDATE_INT)       ?: '',
+    'status'     => filter_input(INPUT_GET, 'status',     FILTER_SANITIZE_SPECIAL_CHARS) ?: '',
     'company_id' => ($_SESSION['role'] === 'admin')
         ? (filter_input(INPUT_GET, 'company_id', FILTER_VALIDATE_INT) ?: '')
         : $_SESSION['company_id'],
@@ -214,7 +216,7 @@ $orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 't
                 </tbody>
             </table>
 
-            <?php if ($orders['total'] > 0): ?>
+            <?php if (!empty($orders['data']) && $orders['pages'] > 1): ?>
             <div class="d-flex justify-content-center mt-4">
                 <nav aria-label="Page navigation">
                     <ul class="pagination">
