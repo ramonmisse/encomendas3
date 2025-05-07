@@ -21,18 +21,18 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
         // Base query
         $sql = "SELECT o.*, m.name as model, u.username, o.client_name as client, c.name as company_name 
                FROM orders o 
-               JOIN product_models m ON o.model_id = m.id 
-               JOIN users u ON o.user_id = u.id
-               JOIN companies c ON o.company_id = c.id";
+               LEFT JOIN product_models m ON o.model_id = m.id 
+               LEFT JOIN users u ON o.user_id = u.id
+               LEFT JOIN companies c ON o.company_id = c.id";
 
         // Add date filters
         if (!empty($filters['start_date'])) {
-            $where[] = "o.delivery_date >= ?"; 
+            $where[] = "DATE(o.delivery_date) >= DATE(?)"; 
             $params[] = $filters['start_date'];
         }
 
         if (!empty($filters['end_date'])) {
-            $where[] = "o.delivery_date <= ?"; 
+            $where[] = "DATE(o.delivery_date) <= DATE(?)"; 
             $params[] = $filters['end_date'];
         }
 
