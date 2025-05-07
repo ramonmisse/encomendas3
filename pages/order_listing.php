@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 // Improved filters with proper sanitization
 $filters = [
     'start_date' => filter_input(INPUT_GET, 'start_date', FILTER_SANITIZE_SPECIAL_CHARS) ?: '',

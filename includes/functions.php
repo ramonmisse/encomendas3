@@ -13,6 +13,8 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
         $page = max(1, $page); // Ensure page is at least 1
         $offset = ($page - 1) * $perPage;
 
+        error_log("Executing getOrders with filters: " . print_r($filters, true));
+
         // Add company filter
         if (!empty($filters['company_id'])) {
             $where[] = "o.company_id = ?";
@@ -81,9 +83,15 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
             'pages' => ceil($totalCount / $perPage)
         ];
     } catch(PDOException $e) {
-        // For development, show error. For production, log error and show generic message
         error_log('Error fetching orders: ' . $e->getMessage());
-        return [];
+        error_log('SQL Query: ' . $sql);
+        error_log('Parameters: ' . print_r($params, true));
+        return [
+            'data' => [],
+            'total' => 0,
+            'pages' => 0,
+            'error' => $e->getMessage()
+        ];
     }
 }
 
