@@ -14,8 +14,12 @@ if ($_SESSION['role'] === 'admin') {
     $companies = $pdo->query("SELECT * FROM companies ORDER BY name")->fetchAll();
 }
 
-// Fetch orders from database with filters
-$orders = getOrders($pdo, $filters);
+// Get current page from URL
+$currentPage = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
+$perPage = 10;
+
+// Fetch orders from database with filters and pagination
+$orders = getOrders($pdo, $filters, $currentPage, $perPage);
 ?>
 
 <div class="card mb-4">
@@ -104,14 +108,14 @@ $orders = getOrders($pdo, $filters);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($orders)): ?>
+                    <?php if (empty($orders['data'])): ?>
                         <tr>
                             <td colspan="7" class="text-center py-4">
                                 <p class="text-muted mb-0">Nenhum pedido encontrado. Crie um novo pedido para começar.</p>
                             </td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($orders as $order): ?>
+                        <?php foreach ($orders['data'] as $order): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($order['username'] ?? 'N/A'); ?></td>
                                 <td><?php echo isset($order['client']) ? htmlspecialchars($order['client']) : 'N/A'; ?></td>
@@ -203,6 +207,53 @@ $orders = getOrders($pdo, $filters);
                     <?php endif; ?>
                 </tbody>
             </table>
+
+            <?php if ($orders['pages'] > 1): ?>
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <?php if ($currentPage > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=order_listing&page_num=<?php echo ($currentPage - 1); ?><?php 
+                                echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : '';
+                                echo isset($_GET['client']) ? '&client=' . htmlspecialchars($_GET['client']) : '';
+                                echo isset($_GET['model_id']) ? '&model_id=' . htmlspecialchars($_GET['model_id']) : '';
+                                echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : '';
+                            ?>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <?php endif; ?>
+
+                        <?php 
+                        for ($i = 1; $i <= $orders['pages']; $i++): 
+                        ?>
+                        <li class="page-item <?php echo $currentPage === $i ? 'active' : ''; ?>">
+                            <a class="page-link" href="?page=order_listing&page_num=<?php echo $i; ?><?php 
+                                echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : '';
+                                echo isset($_GET['client']) ? '&client=' . htmlspecialchars($_GET['client']) : '';
+                                echo isset($_GET['model_id']) ? '&model_id=' . htmlspecialchars($_GET['model_id']) : '';
+                                echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : '';
+                            ?>"><?php echo $i; ?></a>
+                        </li>
+                        <?php endfor; ?>
+
+                        <?php if ($currentPage < $orders['pages']): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=order_listing&page_num=<?php echo ($currentPage + 1); ?><?php 
+                                echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : '';
+                                echo isset($_GET['client']) ? '&client=' . htmlspecialchars($_GET['client']) : '';
+                                echo isset($_GET['model_id']) ? '&model_id=' . htmlspecialchars($_GET['model_id']) : '';
+                                echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : '';
+                            ?>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
