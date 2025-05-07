@@ -12,8 +12,11 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
         $params = [];
         $offset = ($page - 1) * $perPage;
 
-        // Add company filter if user is not admin
-        if (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin' && isset($_SESSION['company_id'])) {
+        // Add company filter
+        if (isset($filters['company_id'])) {
+            $where[] = "o.company_id = ?";
+            $params[] = $filters['company_id'];
+        } elseif (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin' && isset($_SESSION['company_id'])) {
             $where[] = "o.company_id = ?";
             $params[] = $_SESSION['company_id'];
         }
