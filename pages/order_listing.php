@@ -1,30 +1,12 @@
 <?php
-// Initialize filters with proper type handling
-$filters = [];
-
-if (!empty($_GET['start_date'])) {
-    $filters['start_date'] = filter_input(INPUT_GET, 'start_date', FILTER_SANITIZE_SPECIAL_CHARS);
-}
-if (!empty($_GET['end_date'])) {
-    $filters['end_date'] = filter_input(INPUT_GET, 'end_date', FILTER_SANITIZE_SPECIAL_CHARS);
-}
-if (!empty($_GET['model_id'])) {
-    $filters['model_id'] = filter_input(INPUT_GET, 'model_id', FILTER_VALIDATE_INT);
-}
-if (!empty($_GET['status'])) {
-    $filters['status'] = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_SPECIAL_CHARS);
-}
-
-// Handle company_id based on user role
-if ($_SESSION['role'] === 'admin' && !empty($_GET['company_id'])) {
-    $filters['company_id'] = filter_input(INPUT_GET, 'company_id', FILTER_VALIDATE_INT);
-} elseif (isset($_SESSION['company_id'])) {
-    $filters['company_id'] = $_SESSION['company_id'];
-}
-
-// Get current page from URL with sanitization
-$currentPage = filter_input(INPUT_GET, 'page_num', FILTER_VALIDATE_INT) ?: 1;
-$perPage = 10;
+// Get filter parameters
+$filters = [
+    'start_date' => isset($_GET['start_date']) ? $_GET['start_date'] : '',
+    'end_date' => isset($_GET['end_date']) ? $_GET['end_date'] : '',
+    'model_id' => isset($_GET['model_id']) ? $_GET['model_id'] : '',
+    'status' => isset($_GET['status']) ? $_GET['status'] : '',
+    'company_id' => ($_SESSION['role'] === 'admin' && isset($_GET['company_id'])) ? $_GET['company_id'] : $_SESSION['company_id']
+];
 
 // Get companies for admin filter
 $companies = [];
@@ -32,12 +14,8 @@ if ($_SESSION['role'] === 'admin') {
     $companies = $pdo->query("SELECT * FROM companies ORDER BY name")->fetchAll();
 }
 
-// Get current page from URL
-$currentPage = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
-$perPage = 10;
-
-// Fetch orders from database with filters and pagination
-$orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 'total' => 0, 'pages' => 0];
+// Fetch orders from database with filters
+$orders = getOrders($pdo, $filters);
 ?>
 
 <div class="card mb-4">
@@ -49,11 +27,11 @@ $orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 't
             <input type="hidden" name="page" value="order_listing">
             <div class="col-md-3">
                 <label for="start_date" class="form-label">Data Inicial</label>
-                <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo isset($filters['start_date']) ? htmlspecialchars($filters['start_date']) : ''; ?>">
+                <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo htmlspecialchars($filters['start_date']); ?>">
             </div>
             <div class="col-md-3">
                 <label for="end_date" class="form-label">Data Final</label>
-                <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo isset($filters['end_date']) ? htmlspecialchars($filters['end_date']) : ''; ?>">
+                <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo htmlspecialchars($filters['end_date']); ?>">
             </div>
             <div class="col-md-4">
                 <label for="model_id" class="form-label">Modelo</label>
@@ -126,18 +104,14 @@ $orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 't
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($orders['data'])): ?>
+                    <?php if (empty($orders)): ?>
                         <tr>
-                            <td colspan="8" class="text-center py-4">
-                                <div class="alert alert-info mb-0">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Nenhum pedido encontrado com os filtros atuais.
-                                    <a href="?page=order_listing" class="alert-link ms-2">Limpar filtros</a>
-                                </div>
+                            <td colspan="7" class="text-center py-4">
+                                <p class="text-muted mb-0">Nenhum pedido encontrado. Crie um novo pedido para começar.</p>
                             </td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($orders['data'] as $order): ?>
+                        <?php foreach ($orders as $order): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($order['username'] ?? 'N/A'); ?></td>
                                 <td><?php echo isset($order['client']) ? htmlspecialchars($order['client']) : 'N/A'; ?></td>
@@ -229,53 +203,6 @@ $orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 't
                     <?php endif; ?>
                 </tbody>
             </table>
-
-            <?php if (!empty($orders['data'])): ?>
-            <div class="d-flex justify-content-center mt-4">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <?php 
-                        $currentPage = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
-                        if ($currentPage > 1): 
-                        ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=order_listing&page_num=<?php echo ($currentPage - 1); ?><?php 
-                                echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : '';
-                                echo isset($_GET['model_id']) ? '&model_id=' . htmlspecialchars($_GET['model_id']) : '';
-                                echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : '';
-                            ?>" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                        <?php endif; ?>
-
-                        <?php 
-                        for ($i = 1; $i <= $orders['pages']; $i++): 
-                        ?>
-                        <li class="page-item <?php echo $currentPage === $i ? 'active' : ''; ?>">
-                            <a class="page-link" href="?page=order_listing&page_num=<?php echo $i; ?><?php 
-                                echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : '';
-                                echo isset($_GET['model_id']) ? '&model_id=' . htmlspecialchars($_GET['model_id']) : '';
-                                echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : '';
-                            ?>"><?php echo $i; ?></a>
-                        </li>
-                        <?php endfor; ?>
-
-                        <?php if ($currentPage < $orders['pages']): ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=order_listing&page_num=<?php echo ($currentPage + 1); ?><?php 
-                                echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : '';
-                                echo isset($_GET['model_id']) ? '&model_id=' . htmlspecialchars($_GET['model_id']) : '';
-                                echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : '';
-                            ?>" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                        <?php endif; ?>
-                    </ul>
-                </nav>
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 </div>

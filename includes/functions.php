@@ -6,20 +6,13 @@
  * @param array $filters Optional filters (start_date, end_date, model_id)
  * @return array Array of orders
  */
-function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
+function getOrders($pdo, $filters = []) {
     try {
-        $where = ["1=1"];
+        $where = [];
         $params = [];
-        $page = max(1, $page);
-        $offset = ($page - 1) * $perPage;
 
-        error_log("Starting getOrders execution with page: " . $page . ", perPage: " . $perPage);
-
-        // Add company filter
-        if (!empty($filters['company_id'])) {
-            $where[] = "o.company_id = ?";
-            $params[] = $filters['company_id'];
-        } elseif (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin' && isset($_SESSION['company_id'])) {
+        // Add company filter if user is not admin
+        if (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin' && isset($_SESSION['company_id'])) {
             $where[] = "o.company_id = ?";
             $params[] = $_SESSION['company_id'];
         }
@@ -27,18 +20,18 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
         // Base query
         $sql = "SELECT o.*, m.name as model, u.username, o.client_name as client, c.name as company_name 
                FROM orders o 
-               LEFT JOIN product_models m ON o.model_id = m.id 
-               LEFT JOIN users u ON o.user_id = u.id
-               LEFT JOIN companies c ON o.company_id = c.id";
+               JOIN product_models m ON o.model_id = m.id 
+               JOIN users u ON o.user_id = u.id
+               JOIN companies c ON o.company_id = c.id";
 
         // Add date filters
         if (!empty($filters['start_date'])) {
-            $where[] = "DATE(o.delivery_date) >= DATE(?)"; 
+            $where[] = "o.delivery_date >= ?"; 
             $params[] = $filters['start_date'];
         }
 
         if (!empty($filters['end_date'])) {
-            $where[] = "DATE(o.delivery_date) <= DATE(?)"; 
+            $where[] = "o.delivery_date <= ?"; 
             $params[] = $filters['end_date'];
         }
 
@@ -61,37 +54,16 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
 
         // Add order by
         $sql .= " ORDER BY o.created_at DESC";
-        
-        // Get total count for pagination
-        $countSql = "SELECT COUNT(*) FROM orders o " . (!empty($where) ? " WHERE " . implode(" AND ", $where) : "");
-        $countStmt = $pdo->prepare($countSql);
-        $countStmt->execute($params);
-        $totalCount = $countStmt->fetchColumn();
-        
-        // Add pagination
-        $sql .= " LIMIT ? OFFSET ?";
-        $params[] = $perPage;
-        $params[] = $offset;
 
         // Prepare and execute the statement
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
-        return [
-            'data' => $stmt->fetchAll(),
-            'total' => $totalCount,
-            'pages' => ceil($totalCount / $perPage)
-        ];
+        return $stmt->fetchAll();
     } catch(PDOException $e) {
+        // For development, show error. For production, log error and show generic message
         error_log('Error fetching orders: ' . $e->getMessage());
-        error_log('SQL Query: ' . $sql);
-        error_log('Parameters: ' . print_r($params, true));
-        return [
-            'data' => [],
-            'total' => 0,
-            'pages' => 0,
-            'error' => $e->getMessage()
-        ];
+        return [];
     }
 }
 
