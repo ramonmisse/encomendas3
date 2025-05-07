@@ -1,12 +1,18 @@
 <?php
-// Get filter parameters
+// Get filter parameters with sanitization
 $filters = [
-    'start_date' => isset($_GET['start_date']) ? $_GET['start_date'] : '',
-    'end_date' => isset($_GET['end_date']) ? $_GET['end_date'] : '',
-    'model_id' => isset($_GET['model_id']) ? $_GET['model_id'] : '',
-    'status' => isset($_GET['status']) ? $_GET['status'] : '',
-    'company_id' => ($_SESSION['role'] === 'admin' && isset($_GET['company_id'])) ? $_GET['company_id'] : $_SESSION['company_id']
+    'start_date' => filter_input(INPUT_GET, 'start_date', FILTER_SANITIZE_STRING) ?: '',
+    'end_date' => filter_input(INPUT_GET, 'end_date', FILTER_SANITIZE_STRING) ?: '',
+    'model_id' => filter_input(INPUT_GET, 'model_id', FILTER_VALIDATE_INT) ?: '',
+    'status' => filter_input(INPUT_GET, 'status', FILTER_SANITIZE_STRING) ?: '',
+    'company_id' => ($_SESSION['role'] === 'admin')
+        ? (filter_input(INPUT_GET, 'company_id', FILTER_VALIDATE_INT) ?: '')
+        : $_SESSION['company_id'],
 ];
+
+// Get current page from URL with sanitization
+$currentPage = filter_input(INPUT_GET, 'page_num', FILTER_VALIDATE_INT) ?: 1;
+$perPage = 10;
 
 // Get companies for admin filter
 $companies = [];
