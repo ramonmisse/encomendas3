@@ -68,13 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update existing order
             $id = (int)$_POST['id'];
             
-            // Verify if the order belongs to the user's company
-            $stmt = $pdo->prepare("SELECT company_id FROM orders WHERE id = ?");
+            // Verify if the order exists
+            $stmt = $pdo->prepare("SELECT id FROM orders WHERE id = ?");
             $stmt->execute([$id]);
-            $orderCompanyId = $stmt->fetchColumn();
-            
-            if ($orderCompanyId != $companyId) {
-                throw new Exception('Você não tem permissão para editar este pedido.');
+            if (!$stmt->fetch()) {
+                throw new Exception('Pedido não encontrado.');
             }
             
             // Get existing image URLs if no new images uploaded
