@@ -79,10 +79,6 @@ $orders = getOrders($pdo, $filters, $page_num);
                 <label for="client" class="form-label">Cliente</label>
                 <input type="text" class="form-control" id="client" name="client" value="<?php echo htmlspecialchars($filters['client']); ?>">
             </div>
-            <div class="col-md-3">
-                <label for="order_id" class="form-label">ID do Pedido</label>
-                <input type="text" class="form-control" id="order_id" name="order_id" value="<?php echo htmlspecialchars($filters['order_id']); ?>">
-            </div>
             <div class="col-md-2 d-flex align-items-end">
                 <div class="d-flex gap-2 w-100">
                     <button type="submit" class="btn btn-primary flex-grow-1">
@@ -106,6 +102,7 @@ $orders = getOrders($pdo, $filters, $page_num);
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Criado por</th>
                         <th>Cliente</th>
                         <th>Modelo</th>
@@ -126,6 +123,7 @@ $orders = getOrders($pdo, $filters, $page_num);
                     <?php else: ?>
                         <?php foreach ($orders['data'] as $order): ?>
                             <tr>
+                                <td><?php echo htmlspecialchars($order['id']); ?></td>
                                 <td><?php echo htmlspecialchars($order['username'] ?? 'N/A'); ?></td>
                                 <td><?php echo isset($order['client']) ? htmlspecialchars($order['client']) : 'N/A'; ?></td>
                                 <td><?php echo htmlspecialchars($order['model']); ?></td>

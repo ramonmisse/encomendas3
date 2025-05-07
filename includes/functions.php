@@ -57,11 +57,7 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
             $params[] = '%' . $filters['client'] . '%';
         }
 
-        // Add order ID filter
-        if (!empty($filters['order_id'])) {
-            $where[] = "o.id = ?";
-            $params[] = $filters['order_id'];
-        }
+        
 
         // Add WHERE clause if we have filters
         if (!empty($where)) {
