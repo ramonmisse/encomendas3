@@ -49,11 +49,11 @@ $orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 't
             <input type="hidden" name="page" value="order_listing">
             <div class="col-md-3">
                 <label for="start_date" class="form-label">Data Inicial</label>
-                <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo htmlspecialchars($filters['start_date']); ?>">
+                <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo isset($filters['start_date']) ? htmlspecialchars($filters['start_date']) : ''; ?>">
             </div>
             <div class="col-md-3">
                 <label for="end_date" class="form-label">Data Final</label>
-                <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo htmlspecialchars($filters['end_date']); ?>">
+                <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo isset($filters['end_date']) ? htmlspecialchars($filters['end_date']) : ''; ?>">
             </div>
             <div class="col-md-4">
                 <label for="model_id" class="form-label">Modelo</label>
