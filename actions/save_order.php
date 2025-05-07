@@ -116,12 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->commit();
             $_SESSION['success'] = 'Pedido atualizado com sucesso!';
-            
-            // Add JavaScript confirmation
-            echo "<script>
-                alert('Pedido atualizado com sucesso!');
-                window.location.href = '../index.php?page=home&tab=orders';
-            </script>";
+            header('Location: ../index.php?page=home&tab=orders');
             exit;
         } else {
             // Insert new order
@@ -132,12 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->commit();
             $_SESSION['success'] = 'Pedido incluído com sucesso!';
-            
-            // Add JavaScript confirmation
-            echo "<script>
-                alert('Pedido incluído com sucesso!');
-                window.location.href = '../index.php?page=home&tab=orders';
-            </script>";
+            header('Location: ../index.php?page=home&tab=orders');
             exit;
         }
     } catch (PDOException $e) {
