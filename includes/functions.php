@@ -6,10 +6,11 @@
  * @param array $filters Optional filters (start_date, end_date, model_id)
  * @return array Array of orders
  */
-function getOrders($pdo, $filters = []) {
+function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
     try {
         $where = [];
         $params = [];
+        $offset = ($page - 1) * $perPage;
 
         // Add company filter
         if (isset($filters['company_id'])) {
@@ -58,12 +59,25 @@ function getOrders($pdo, $filters = []) {
         // Add order by
         $sql .= " ORDER BY o.created_at DESC";
         
+        // Get total count for pagination
+        $countSql = "SELECT COUNT(*) FROM orders o " . (!empty($where) ? " WHERE " . implode(" AND ", $where) : "");
+        $countStmt = $pdo->prepare($countSql);
+        $countStmt->execute($params);
+        $totalCount = $countStmt->fetchColumn();
+        
+        // Add pagination
+        $sql .= " LIMIT ? OFFSET ?";
+        $params[] = $perPage;
+        $params[] = $offset;
+
         // Prepare and execute the statement
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
         return [
-            'data' => $stmt->fetchAll()
+            'data' => $stmt->fetchAll(),
+            'total' => $totalCount,
+            'pages' => ceil($totalCount / $perPage)
         ];
     } catch(PDOException $e) {
         // For development, show error. For production, log error and show generic message
