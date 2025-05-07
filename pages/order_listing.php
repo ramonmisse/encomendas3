@@ -118,8 +118,12 @@ $orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 't
                 <tbody>
                     <?php if (empty($orders['data'])): ?>
                         <tr>
-                            <td colspan="7" class="text-center py-4">
-                                <p class="text-muted mb-0">Nenhum pedido encontrado. Crie um novo pedido para começar.</p>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Nenhum pedido encontrado com os filtros atuais.
+                                    <a href="?page=order_listing" class="alert-link ms-2">Limpar filtros</a>
+                                </div>
                             </td>
                         </tr>
                     <?php else: ?>
@@ -216,7 +220,7 @@ $orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 't
                 </tbody>
             </table>
 
-            <?php if (!empty($orders['data']) && $orders['pages'] > 1): ?>
+            <?php if (!empty($orders['data'])): ?>
             <div class="d-flex justify-content-center mt-4">
                 <nav aria-label="Page navigation">
                     <ul class="pagination">
