@@ -208,7 +208,7 @@ $orders = getOrders($pdo, $filters, $currentPage, $perPage);
                 </tbody>
             </table>
 
-            <?php if ($orders['pages'] > 1): ?>
+            <?php if (isset($orders['pages']) && $orders['pages'] > 1): ?>
             <div class="d-flex justify-content-center mt-4">
                 <nav aria-label="Page navigation">
                     <ul class="pagination">

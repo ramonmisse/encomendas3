@@ -71,10 +71,11 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
+        $totalPages = ceil($totalCount / $perPage);
         return [
             'data' => $stmt->fetchAll(),
             'total' => $totalCount,
-            'pages' => ceil($totalCount / $perPage)
+            'pages' => $totalPages > 0 ? $totalPages : 1
         ];
     } catch(PDOException $e) {
         // For development, show error. For production, log error and show generic message
