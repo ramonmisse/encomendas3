@@ -23,7 +23,7 @@ $salesReps = getSalesReps($pdo);
 $models = getProductModels($pdo);
 ?>
 
-<form id="editOrderForm" action="actions/save_order.php" method="post" enctype="multipart/form-data">
+<form id="editOrderForm" action="../actions/save_order.php" method="post" enctype="multipart/form-data">
     <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
 
     <div class="row mb-3">
@@ -53,7 +53,11 @@ $models = getProductModels($pdo);
 
         <div class="col-md-6">
             <label for="metal_type" class="form-label">Tipo de Metal</label>
-            <input type="text" class="form-control" id="metal_type" name="metal_type" value="<?php echo htmlspecialchars($order['metal_type']); ?>" required>
+            <select class="form-select" id="metal_type" name="metal_type" required>
+                <option value="gold" <?php echo ($order['metal_type'] == 'gold') ? 'selected' : ''; ?>>Ouro</option>
+                <option value="silver" <?php echo ($order['metal_type'] == 'silver') ? 'selected' : ''; ?>>Prata</option>
+                <option value="not_applicable" <?php echo ($order['metal_type'] == 'not_applicable') ? 'selected' : ''; ?>>Não Aplicável</option>
+            </select>
         </div>
     </div>
 
