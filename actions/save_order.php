@@ -82,6 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $imageUrlsJson = $stmt->fetchColumn();
             }
             
+            // Set PDO to handle UTF-8 properly
+            $pdo->exec("SET NAMES utf8mb4");
+            
             $stmt = $pdo->prepare("UPDATE orders SET 
                 client_name = :client_name, 
                 delivery_date = :delivery_date, 
@@ -89,10 +92,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 metal_type = :metal_type,
                 status = :status,
                 notes = :notes, 
-                image_urls = :image_urls
-                WHERE id = :id AND company_id = :company_id");
+                image_urls = :image_urls,
+                updated_at = NOW()
+                WHERE id = :id");
             
-            $stmt->execute([
+            $params = [
                 ':client_name' => $clientName,
                 ':delivery_date' => $deliveryDateTime,
                 ':model_id' => $modelId,
@@ -100,9 +104,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':status' => $status,
                 ':notes' => $notes,
                 ':image_urls' => $imageUrlsJson,
-                ':id' => $id,
-                ':company_id' => $companyId
-            ]);
+                ':id' => $id
+            ];
+            
+            $stmt->execute($params);
+            
+            // Check if update was successful
+            if ($stmt->rowCount() === 0) {
+                throw new Exception('Não foi possível atualizar o pedido. Verifique os dados e tente novamente.');
+            }
             
             $pdo->commit();
             $_SESSION['success'] = 'Pedido atualizado com sucesso!';
