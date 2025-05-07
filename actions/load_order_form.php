@@ -53,11 +53,7 @@ $models = getProductModels($pdo);
 
         <div class="col-md-6">
             <label for="metal_type" class="form-label">Tipo de Metal</label>
-            <select class="form-select" id="metal_type" name="metal_type" required>
-                <option value="gold" <?php echo ($order['metal_type'] == 'gold') ? 'selected' : ''; ?>>Ouro</option>
-                <option value="silver" <?php echo ($order['metal_type'] == 'silver') ? 'selected' : ''; ?>>Prata</option>
-                <option value="not_applicable" <?php echo ($order['metal_type'] == 'not_applicable') ? 'selected' : ''; ?>>Não Aplicável</option>
-            </select>
+            <input type="text" class="form-control" id="metal_type" name="metal_type" value="<?php echo htmlspecialchars($order['metal_type']); ?>" required>
         </div>
     </div>
 
