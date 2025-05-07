@@ -1,10 +1,10 @@
 <?php
 // Get filter parameters with sanitization
 $filters = [
-    'start_date' => filter_input(INPUT_GET, 'start_date', FILTER_SANITIZE_STRING) ?: '',
-    'end_date' => filter_input(INPUT_GET, 'end_date', FILTER_SANITIZE_STRING) ?: '',
+    'start_date' => htmlspecialchars(filter_input(INPUT_GET, 'start_date') ?: ''),
+    'end_date' => htmlspecialchars(filter_input(INPUT_GET, 'end_date') ?: ''),
     'model_id' => filter_input(INPUT_GET, 'model_id', FILTER_VALIDATE_INT) ?: '',
-    'status' => filter_input(INPUT_GET, 'status', FILTER_SANITIZE_STRING) ?: '',
+    'status' => htmlspecialchars(filter_input(INPUT_GET, 'status') ?: ''),
     'company_id' => ($_SESSION['role'] === 'admin')
         ? (filter_input(INPUT_GET, 'company_id', FILTER_VALIDATE_INT) ?: '')
         : $_SESSION['company_id'],
@@ -25,7 +25,7 @@ $currentPage = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
 $perPage = 10;
 
 // Fetch orders from database with filters and pagination
-$orders = getOrders($pdo, $filters, $currentPage, $perPage);
+$orders = getOrders($pdo, $filters, $currentPage, $perPage) ?: ['data' => [], 'total' => 0, 'pages' => 0];
 ?>
 
 <div class="card mb-4">
