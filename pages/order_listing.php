@@ -14,8 +14,12 @@ if ($_SESSION['role'] === 'admin') {
     $companies = $pdo->query("SELECT * FROM companies ORDER BY name")->fetchAll();
 }
 
-// Fetch orders from database with filters
-$orders = getOrders($pdo, $filters);
+// Get current page from URL
+$currentPage = isset($_GET['pg']) ? max(1, intval($_GET['pg'])) : 1;
+
+// Fetch orders from database with filters and pagination
+$result = getOrders($pdo, $filters, $currentPage, 20);
+$orders = $result['data'];
 ?>
 
 <div class="card mb-4">
@@ -206,6 +210,37 @@ $orders = getOrders($pdo, $filters);
                 </tbody>
             </table>
         </div>
+        <?php if ($result['pages'] > 1): ?>
+        <div class="d-flex justify-content-center mt-3">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <?php if ($currentPage > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=order_listing&pg=<?php echo ($currentPage - 1); ?><?php echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : ''; ?><?php echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : ''; ?>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = 1; $i <= $result['pages']; $i++): ?>
+                    <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
+                        <a class="page-link" href="?page=order_listing&pg=<?php echo $i; ?><?php echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : ''; ?><?php echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : ''; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    </li>
+                    <?php endfor; ?>
+                    
+                    <?php if ($currentPage < $result['pages']): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=order_listing&pg=<?php echo ($currentPage + 1); ?><?php echo isset($_GET['company_id']) ? '&company_id=' . htmlspecialchars($_GET['company_id']) : ''; ?><?php echo isset($_GET['status']) ? '&status=' . htmlspecialchars($_GET['status']) : ''; ?>" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

@@ -6,7 +6,7 @@
  * @param array $filters Optional filters (start_date, end_date, model_id)
  * @return array Array of orders
  */
-function getOrders($pdo, $filters = []) {
+function getOrders($pdo, $filters = [], $page = 1, $perPage = 20) {
     try {
         $where = [];
         $params = [];
@@ -55,11 +55,31 @@ function getOrders($pdo, $filters = []) {
         // Add order by
         $sql .= " ORDER BY o.created_at DESC";
 
+        // Add LIMIT for pagination
+        $offset = ($page - 1) * $perPage;
+        $sql .= " LIMIT " . $perPage . " OFFSET " . $offset;
+
+
+        // Count total orders for pagination
+        $countSql = "SELECT COUNT(*) FROM orders o";
+        if (!empty($where)) {
+            $countSql .= " WHERE " . implode(" AND ", $where);
+        }
+        $countStmt = $pdo->prepare($countSql);
+        $countStmt->execute($params);
+        $total = $countStmt->fetchColumn();
+
+
         // Prepare and execute the statement
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetchAll();
+        return [
+            'data' => $stmt->fetchAll(),
+            'total' => $total,
+            'pages' => ceil($total / $perPage),
+            'current_page' => $page
+        ];
     } catch(PDOException $e) {
         // For development, show error. For production, log error and show generic message
         error_log('Error fetching orders: ' . $e->getMessage());
