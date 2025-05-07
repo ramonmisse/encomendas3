@@ -23,7 +23,7 @@ $salesReps = getSalesReps($pdo);
 $models = getProductModels($pdo);
 ?>
 
-<form id="editOrderForm" action="../actions/save_order.php" method="post" enctype="multipart/form-data">
+<form id="editOrderForm" action="actions/save_order.php" method="post" enctype="multipart/form-data">
     <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
 
     <div class="row mb-3">
