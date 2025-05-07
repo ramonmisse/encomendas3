@@ -93,6 +93,7 @@ $orders = getOrders($pdo, $filters);
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>#ID</th>
                         <th>Criado por</th>
                         <th>Cliente</th>
                         <th>Modelo</th>
@@ -113,6 +114,7 @@ $orders = getOrders($pdo, $filters);
                     <?php else: ?>
                         <?php foreach ($orders as $order): ?>
                             <tr>
+                                <td><?php echo htmlspecialchars($order['id']); ?></td>
                                 <td><?php echo htmlspecialchars($order['username'] ?? 'N/A'); ?></td>
                                 <td><?php echo isset($order['client']) ? htmlspecialchars($order['client']) : 'N/A'; ?></td>
                                 <td><?php echo htmlspecialchars($order['model']); ?></td>
