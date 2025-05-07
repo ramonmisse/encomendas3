@@ -1,14 +1,26 @@
 <?php
-// Improved filters with proper sanitization
-$filters = [
-    'start_date' => filter_input(INPUT_GET, 'start_date', FILTER_SANITIZE_SPECIAL_CHARS) ?: '',
-    'end_date'   => filter_input(INPUT_GET, 'end_date',   FILTER_SANITIZE_SPECIAL_CHARS) ?: '',
-    'model_id'   => filter_input(INPUT_GET, 'model_id',   FILTER_VALIDATE_INT)       ?: '',
-    'status'     => filter_input(INPUT_GET, 'status',     FILTER_SANITIZE_SPECIAL_CHARS) ?: '',
-    'company_id' => ($_SESSION['role'] === 'admin')
-        ? (filter_input(INPUT_GET, 'company_id', FILTER_VALIDATE_INT) ?: '')
-        : $_SESSION['company_id'],
-];
+// Initialize filters with proper type handling
+$filters = [];
+
+if (!empty($_GET['start_date'])) {
+    $filters['start_date'] = filter_input(INPUT_GET, 'start_date', FILTER_SANITIZE_SPECIAL_CHARS);
+}
+if (!empty($_GET['end_date'])) {
+    $filters['end_date'] = filter_input(INPUT_GET, 'end_date', FILTER_SANITIZE_SPECIAL_CHARS);
+}
+if (!empty($_GET['model_id'])) {
+    $filters['model_id'] = filter_input(INPUT_GET, 'model_id', FILTER_VALIDATE_INT);
+}
+if (!empty($_GET['status'])) {
+    $filters['status'] = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_SPECIAL_CHARS);
+}
+
+// Handle company_id based on user role
+if ($_SESSION['role'] === 'admin' && !empty($_GET['company_id'])) {
+    $filters['company_id'] = filter_input(INPUT_GET, 'company_id', FILTER_VALIDATE_INT);
+} elseif (isset($_SESSION['company_id'])) {
+    $filters['company_id'] = $_SESSION['company_id'];
+}
 
 // Get current page from URL with sanitization
 $currentPage = filter_input(INPUT_GET, 'page_num', FILTER_VALIDATE_INT) ?: 1;
