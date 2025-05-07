@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $modelId = (int)$_POST['model_id'];
     $metalType = sanitizeInput($_POST['metal_type']);
     $status = sanitizeInput($_POST['status'] ?? 'Em produção');
-    $notes = isset($_POST['notes']) ? sanitizeInput($_POST['notes']) : '';
+    $notes = isset($_POST['notes']) ? trim($_POST['notes']) : '';
     
     // Validate required fields
     if (empty($userId) || empty($clientName) || empty($deliveryDate) || empty($modelId) || empty($metalType) || empty($companyId)) {
@@ -83,15 +83,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $stmt = $pdo->prepare("UPDATE orders SET 
-                client_name = ?, 
-                delivery_date = ?, 
-                model_id = ?, 
-                metal_type = ?,
-                status = ?,
-                notes = ?, 
-                image_urls = ?
-                WHERE id = ? AND company_id = ?");
-            $stmt->execute([$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id, $companyId]);
+                client_name = :client_name, 
+                delivery_date = :delivery_date, 
+                model_id = :model_id, 
+                metal_type = :metal_type,
+                status = :status,
+                notes = :notes, 
+                image_urls = :image_urls
+                WHERE id = :id AND company_id = :company_id");
+            
+            $stmt->execute([
+                ':client_name' => $clientName,
+                ':delivery_date' => $deliveryDateTime,
+                ':model_id' => $modelId,
+                ':metal_type' => $metalType,
+                ':status' => $status,
+                ':notes' => $notes,
+                ':image_urls' => $imageUrlsJson,
+                ':id' => $id,
+                ':company_id' => $companyId
+            ]);
             
             $pdo->commit();
             $_SESSION['success'] = 'Pedido atualizado com sucesso!';
