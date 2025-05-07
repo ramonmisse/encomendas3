@@ -57,7 +57,7 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
             $params[] = '%' . $filters['client'] . '%';
         }
 
-        
+
 
         // Add WHERE clause if we have filters
         if (!empty($where)) {
@@ -66,13 +66,13 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 10) {
 
         // Add order by
         $sql .= " ORDER BY o.created_at DESC";
-        
+
         // Get total count for pagination
         $countSql = "SELECT COUNT(*) FROM orders o " . (!empty($where) ? " WHERE " . implode(" AND ", $where) : "");
         $countStmt = $pdo->prepare($countSql);
         $countStmt->execute($params);
         $totalCount = $countStmt->fetchColumn();
-        
+
         // Add pagination
         $sql .= " LIMIT ? OFFSET ?";
         $params[] = $perPage;
