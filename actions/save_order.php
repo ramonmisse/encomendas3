@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 require_once '../includes/config.php';
@@ -32,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notes = isset($_POST['notes']) ? sanitizeInput($_POST['notes']) : '';
     
     // Validate required fields
-    if (empty($userId) || empty($clientName) || empty($deliveryDate) || empty($modelId) || empty($metalType) || empty($companyId)) {
+    if (empty($userId) || empty($clientName) || empty($deliveryDate) || empty($modelId) || empty($metalType)) {
         $_SESSION['error'] = 'Todos os campos obrigatórios devem ser preenchidos.';
         header('Location: ../index.php?page=home&tab=new-order');
         exit;
@@ -77,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     metal_type = ?,
                     status = ?,
                     notes = ?, 
-                    image_urls = ?
+                    image_urls = COALESCE(?, image_urls)
                     WHERE id = ?");
                 $stmt->execute([$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id]);
             } else {
@@ -97,28 +96,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     metal_type = ?,
                     status = ?,
                     notes = ?, 
-                    image_urls = ?
+                    image_urls = COALESCE(?, image_urls)
                     WHERE id = ? AND company_id = ?");
                 $stmt->execute([$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id, $companyId]);
             }
-            
-            // Get existing image URLs if no new images uploaded
-            if (empty($imageUrls)) {
-                $stmt = $pdo->prepare("SELECT image_urls FROM orders WHERE id = ?");
-                $stmt->execute([$id]);
-                $imageUrlsJson = $stmt->fetchColumn();
-            }
-            
-            $stmt = $pdo->prepare("UPDATE orders SET 
-                client_name = ?, 
-                delivery_date = ?, 
-                model_id = ?, 
-                metal_type = ?,
-                status = ?,
-                notes = ?, 
-                image_urls = ?
-                WHERE id = ? AND company_id = ?");
-            $stmt->execute([$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id, $companyId]);
             
             $pdo->commit();
             $_SESSION['success'] = 'Pedido atualizado com sucesso!';
