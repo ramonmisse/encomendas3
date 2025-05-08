@@ -10,15 +10,13 @@ error_reporting(E_ALL);
 
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Debug: Print POST data
-    error_log('POST data: ' . print_r($_POST, true));
-    
     // Start transaction for data integrity
     $pdo->beginTransaction();
     
     // Get user and company data from session
     $userId = (int)$_SESSION['user_id'];
     $companyId = (int)$_SESSION['company_id'];
+    $isAdmin = $_SESSION['role'] === 'admin';
     
     // Validate and sanitize inputs
     $clientName = sanitizeInput($_POST['client_name']);
@@ -32,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notes = isset($_POST['notes']) ? sanitizeInput($_POST['notes']) : '';
     
     // Validate required fields
-    if (empty($userId) || empty($clientName) || empty($deliveryDate) || empty($modelId) || empty($metalType) || empty($companyId)) {
+    if (empty($userId) || empty($clientName) || empty($deliveryDate) || empty($modelId) || empty($metalType)) {
         $_SESSION['error'] = 'Todos os campos obrigatórios devem ser preenchidos.';
         header('Location: ../index.php?page=home&tab=new-order');
         exit;
@@ -68,13 +66,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update existing order
             $id = (int)$_POST['id'];
             
-            // Verify if the order belongs to the user's company
-            $stmt = $pdo->prepare("SELECT company_id FROM orders WHERE id = ?");
-            $stmt->execute([$id]);
-            $orderCompanyId = $stmt->fetchColumn();
-            
-            if ($orderCompanyId != $companyId) {
-                throw new Exception('Você não tem permissão para editar este pedido.');
+            // Only check company ownership if not admin
+            if (!$isAdmin) {
+                $stmt = $pdo->prepare("SELECT company_id FROM orders WHERE id = ?");
+                $stmt->execute([$id]);
+                $orderCompanyId = $stmt->fetchColumn();
+                
+                if ($orderCompanyId != $companyId) {
+                    throw new Exception('Você não tem permissão para editar este pedido.');
+                }
             }
             
             // Get existing image URLs if no new images uploaded
@@ -84,25 +84,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $imageUrlsJson = $stmt->fetchColumn();
             }
             
-            $stmt = $pdo->prepare("UPDATE orders SET 
+            // Remove company_id check for admin users
+            $sql = "UPDATE orders SET 
                 client_name = ?, 
                 delivery_date = ?, 
                 model_id = ?, 
                 metal_type = ?,
                 status = ?,
                 notes = ?, 
-                image_urls = ?
-                WHERE id = ? AND company_id = ?");
-            $stmt->execute([$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id, $companyId]);
+                image_urls = ?,
+                updated_at = NOW()
+                WHERE id = ?";
+            
+            $params = [$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id];
+            
+            if (!$isAdmin) {
+                $sql .= " AND company_id = ?";
+                $params[] = $companyId;
+            }
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            
+            if ($stmt->rowCount() === 0) {
+                throw new Exception('Não foi possível atualizar o pedido. Verifique os dados e tente novamente.');
+            }
             
             $pdo->commit();
             $_SESSION['success'] = 'Pedido atualizado com sucesso!';
-            
-            // Add JavaScript confirmation
-            echo "<script>
-                alert('Pedido atualizado com sucesso!');
-                window.location.href = '../index.php?page=home&tab=orders';
-            </script>";
+            header('Location: ../index.php?page=home&tab=orders');
             exit;
         } else {
             // Insert new order
@@ -113,12 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->commit();
             $_SESSION['success'] = 'Pedido incluído com sucesso!';
-            
-            // Add JavaScript confirmation
-            echo "<script>
-                alert('Pedido incluído com sucesso!');
-                window.location.href = '../index.php?page=home&tab=orders';
-            </script>";
+            header('Location: ../index.php?page=home&tab=orders');
             exit;
         }
     } catch (PDOException $e) {
