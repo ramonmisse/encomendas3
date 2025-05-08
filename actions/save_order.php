@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $imageUrlsJson = $stmt->fetchColumn();
             }
             
-            // Remove company_id check for admin users
+            // Allow admin to change company_id
             $sql = "UPDATE orders SET 
                 client_name = ?, 
                 delivery_date = ?, 
@@ -93,10 +93,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 status = ?,
                 notes = ?, 
                 image_urls = ?,
+                company_id = ?,
                 updated_at = NOW()
                 WHERE id = ?";
             
-            $params = [$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id];
+            $params = [
+                $clientName, 
+                $deliveryDateTime, 
+                $modelId, 
+                $metalType, 
+                $status, 
+                $notes, 
+                $imageUrlsJson,
+                $isAdmin ? (isset($_POST['company_id']) ? (int)$_POST['company_id'] : $companyId) : $companyId,
+                $id
+            ];
             
             if (!$isAdmin) {
                 $sql .= " AND company_id = ?";
