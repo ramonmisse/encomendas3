@@ -105,14 +105,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $status, 
                 $notes, 
                 $imageUrlsJson,
-                $isAdmin ? (isset($_POST['company_id']) ? (int)$_POST['company_id'] : $companyId) : $companyId,
+                isset($_POST['company_id']) ? (int)$_POST['company_id'] : $companyId,
                 $id
             ];
-            
-            if (!$isAdmin) {
-                $sql .= " AND company_id = ?";
-                $params[] = $companyId;
-            }
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
