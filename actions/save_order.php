@@ -66,13 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update existing order
             $id = (int)$_POST['id'];
             
-            // Only check company ownership if not admin
             if (!$isAdmin) {
-                $stmt = $pdo->prepare("SELECT company_id FROM orders WHERE id = ?");
-                $stmt->execute([$id]);
-                $orderCompanyId = $stmt->fetchColumn();
-                
-                if ($orderCompanyId != $companyId) {
+                $stmt = $pdo->prepare("SELECT company_id FROM orders WHERE id = ? AND company_id = ?");
+                $stmt->execute([$id, $companyId]);
+                if (!$stmt->fetch()) {
                     throw new Exception('Você não tem permissão para editar este pedido.');
                 }
             }
@@ -97,17 +94,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 updated_at = NOW()
                 WHERE id = ?";
             
-            $params = [
-                $clientName, 
-                $deliveryDateTime, 
-                $modelId, 
-                $metalType, 
-                $status, 
-                $notes, 
-                $imageUrlsJson,
-                isset($_POST['company_id']) ? (int)$_POST['company_id'] : $companyId,
-                $id
-            ];
+            if ($isAdmin) {
+                $params = [
+                    $clientName, 
+                    $deliveryDateTime, 
+                    $modelId, 
+                    $metalType, 
+                    $status, 
+                    $notes, 
+                    $imageUrlsJson,
+                    isset($_POST['company_id']) ? (int)$_POST['company_id'] : $companyId,
+                    $id
+                ];
+            } else {
+                $sql .= " AND company_id = ?";
+                $params = [
+                    $clientName, 
+                    $deliveryDateTime, 
+                    $modelId, 
+                    $metalType, 
+                    $status, 
+                    $notes, 
+                    $imageUrlsJson,
+                    $companyId,
+                    $id,
+                    $companyId
+                ];
+            }
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
