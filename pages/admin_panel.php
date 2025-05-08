@@ -184,6 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                             <select name="role" class="form-select" required>
                                 <option value="user">Usuário</option>
                                 <option value="admin">Administrador</option>
+                                <option value="superadmin">Super Administrador</option>
                             </select>
                         </div>
                         <div class="mb-3">

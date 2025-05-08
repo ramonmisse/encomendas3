@@ -73,8 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$id]);
             $orderCompanyId = $stmt->fetchColumn();
             
-            if ($orderCompanyId != $companyId) {
+            if ($orderCompanyId != $companyId && $_SESSION['role'] !== 'superadmin') {
                 throw new Exception('Você não tem permissão para editar este pedido.');
+            }
+            
+            // If superadmin, allow editing regardless of company
+            if ($_SESSION['role'] === 'superadmin') {
+                $companyId = $orderCompanyId;
             }
             
             // Get existing image URLs if no new images uploaded
