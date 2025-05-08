@@ -13,13 +13,13 @@ define('DB_NAME', 'reve_links_controle');
 try {
     $pdo_setup = new PDO("mysql:host=" . DB_HOST, DB_USER, DB_PASS);
     $pdo_setup->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+    
     // Create database if it doesn't exist
     $pdo_setup->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-
+    
     // Select the database
     $pdo_setup->exec("USE `" . DB_NAME . "`");
-
+    
     // Create tables if they don't exist
     $pdo_setup->exec("CREATE TABLE IF NOT EXISTS `sales_representatives` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -30,7 +30,7 @@ try {
         PRIMARY KEY (`id`),
         UNIQUE KEY `email` (`email`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
+    
     $pdo_setup->exec("CREATE TABLE IF NOT EXISTS `product_models` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` varchar(100) NOT NULL,
@@ -38,7 +38,7 @@ try {
         `description` text DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
+    
     $pdo_setup->exec("CREATE TABLE IF NOT EXISTS `companies` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` varchar(100) NOT NULL,
@@ -52,7 +52,7 @@ try {
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `username` varchar(50) NOT NULL,
         `password` varchar(255) NOT NULL,
-        `role` enum('superadmin','admin','user') NOT NULL DEFAULT 'user',
+        `role` enum('admin','user') NOT NULL DEFAULT 'user',
         `company_id` int(11) DEFAULT NULL,
         `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
@@ -79,7 +79,7 @@ try {
         CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`sales_representative_id`) REFERENCES `sales_representatives` (`id`),
         CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`model_id`) REFERENCES `product_models` (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
+    
 } catch(PDOException $e) {
     die("ERROR: Could not set up database. " . $e->getMessage());
 }

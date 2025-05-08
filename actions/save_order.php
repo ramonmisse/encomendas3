@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 require_once '../includes/config.php';
@@ -31,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notes = isset($_POST['notes']) ? sanitizeInput($_POST['notes']) : '';
     
     // Validate required fields
-    if (empty($userId) || empty($clientName) || empty($deliveryDate) || empty($modelId) || empty($metalType)) {
+    if (empty($userId) || empty($clientName) || empty($deliveryDate) || empty($modelId) || empty($metalType) || empty($companyId)) {
         $_SESSION['error'] = 'Todos os campos obrigatórios devem ser preenchidos.';
         header('Location: ../index.php?page=home&tab=new-order');
         exit;
@@ -67,39 +68,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update existing order
             $id = (int)$_POST['id'];
             
-            // If superadmin, allow editing any order
-            if ($_SESSION['role'] === 'superadmin') {
-                $stmt = $pdo->prepare("UPDATE orders SET 
-                    client_name = ?, 
-                    delivery_date = ?, 
-                    model_id = ?, 
-                    metal_type = ?,
-                    status = ?,
-                    notes = ?, 
-                    image_urls = COALESCE(?, image_urls)
-                    WHERE id = ?");
-                $stmt->execute([$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id]);
-            } else {
-                // For non-superadmin users, verify if the order belongs to their company
-                $stmt = $pdo->prepare("SELECT company_id FROM orders WHERE id = ?");
-                $stmt->execute([$id]);
-                $orderCompanyId = $stmt->fetchColumn();
-                
-                if ($orderCompanyId != $companyId) {
-                    throw new Exception('Você não tem permissão para editar este pedido.');
-                }
-                
-                $stmt = $pdo->prepare("UPDATE orders SET 
-                    client_name = ?, 
-                    delivery_date = ?, 
-                    model_id = ?, 
-                    metal_type = ?,
-                    status = ?,
-                    notes = ?, 
-                    image_urls = COALESCE(?, image_urls)
-                    WHERE id = ? AND company_id = ?");
-                $stmt->execute([$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id, $companyId]);
+            // Verify if the order belongs to the user's company
+            $stmt = $pdo->prepare("SELECT company_id FROM orders WHERE id = ?");
+            $stmt->execute([$id]);
+            $orderCompanyId = $stmt->fetchColumn();
+            
+            if ($orderCompanyId != $companyId) {
+                throw new Exception('Você não tem permissão para editar este pedido.');
             }
+            
+            // Get existing image URLs if no new images uploaded
+            if (empty($imageUrls)) {
+                $stmt = $pdo->prepare("SELECT image_urls FROM orders WHERE id = ?");
+                $stmt->execute([$id]);
+                $imageUrlsJson = $stmt->fetchColumn();
+            }
+            
+            $stmt = $pdo->prepare("UPDATE orders SET 
+                client_name = ?, 
+                delivery_date = ?, 
+                model_id = ?, 
+                metal_type = ?,
+                status = ?,
+                notes = ?, 
+                image_urls = ?
+                WHERE id = ? AND company_id = ?");
+            $stmt->execute([$clientName, $deliveryDateTime, $modelId, $metalType, $status, $notes, $imageUrlsJson, $id, $companyId]);
             
             $pdo->commit();
             $_SESSION['success'] = 'Pedido atualizado com sucesso!';
