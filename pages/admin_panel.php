@@ -3,7 +3,7 @@
 $adminTab = isset($_GET['admin_tab']) ? $_GET['admin_tab'] : 'models';
 
 //Check for admin permissions
-if ($_SESSION['role'] !== 'admin') {
+if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'superadmin') {
     header('Location: index.php');
     exit;
 }
@@ -26,7 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_company'])) {
 // Add user
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
     $hashedPassword = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $companyId = !empty($_POST['company_id']) ? (int)$_POST['company_id'] : null;
+    // If role is superadmin, set company_id to NULL
+    $companyId = $_POST['role'] === 'superadmin' ? null : (!empty($_POST['company_id']) ? (int)$_POST['company_id'] : null);
+    
     $stmt = $pdo->prepare("INSERT INTO users (username, password, role, company_id) VALUES (?, ?, ?, ?)");
     $stmt->bindParam(1, $_POST['username']);
     $stmt->bindParam(2, $hashedPassword);
@@ -186,13 +188,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Tipo de Usuário</label>
-                            <select name="role" class="form-select" required>
+                            <select name="role" class="form-select" required id="userRole">
                                 <option value="user">Usuário</option>
                                 <option value="admin">Administrador</option>
                                 <option value="superadmin">Super Administrador</option>
                             </select>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3" id="companySelect">
                             <label class="form-label">Empresa</label>
                             <select name="company_id" class="form-select">
                                 <option value="">Nenhuma</option>
@@ -216,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                             <?php foreach ($users as $user): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($user['username']); ?></td>
-                                <td><?php echo $user['role'] == 'admin' ? 'Administrador' : 'Usuário'; ?></td>
+                                <td><?php echo $user['role'] == 'admin' ? 'Administrador' : ($user['role'] == 'superadmin' ? 'Super Administrador' : 'Usuário'); ?></td>
                                 <td><?php echo htmlspecialchars($user['company_name'] ?? 'Nenhuma'); ?></td>
                             </tr>
                             <?php endforeach; ?>
@@ -351,6 +353,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const id = this.getAttribute('data-id');
             document.getElementById('deleteModelId').value = id;
         });
+    });
+
+    // Handle company select visibility based on user role
+    const userRoleSelect = document.getElementById('userRole');
+    const companySelect = document.getElementById('companySelect');
+
+    userRoleSelect.addEventListener('change', function() {
+        if (this.value === 'superadmin') {
+            companySelect.style.display = 'none';
+        } else {
+            companySelect.style.display = 'block';
+        }
     });
 });
 </script>
