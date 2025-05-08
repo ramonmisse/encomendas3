@@ -33,8 +33,8 @@ if ($dbInstalled) {
             include 'pages/order_form.php';
             break;
         case 'admin':
-            // Check if user is admin
-            if ($_SESSION['role'] === 'admin') {
+            // Check if user is admin or superadmin
+            if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'superadmin') {
                 include 'pages/admin_panel.php';
             } else {
                 header('Location: index.php');
