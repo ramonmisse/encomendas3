@@ -26,8 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_company'])) {
 // Add user
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
     $hashedPassword = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $companyId = !empty($_POST['company_id']) ? $_POST['company_id'] : null;
     $stmt = $pdo->prepare("INSERT INTO users (username, password, role, company_id) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$_POST['username'], $hashedPassword, $_POST['role'], $_POST['company_id']]);
+    $stmt->execute([$_POST['username'], $hashedPassword, $_POST['role'], $companyId]);
     header('Location: index.php?page=admin_panel');
     exit;
 }
