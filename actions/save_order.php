@@ -73,7 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$id]);
             $orderCompanyId = $stmt->fetchColumn();
             
-            if ($orderCompanyId != $companyId) {
+            // Allow superadmin to edit any order, others only their company's orders
+            if ($_SESSION['role'] !== 'superadmin' && $orderCompanyId != $companyId) {
                 throw new Exception('Você não tem permissão para editar este pedido.');
             }
             

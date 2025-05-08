@@ -52,7 +52,7 @@ try {
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `username` varchar(50) NOT NULL,
         `password` varchar(255) NOT NULL,
-        `role` enum('admin','user') NOT NULL DEFAULT 'user',
+        `role` enum('superadmin','admin','user') NOT NULL DEFAULT 'user',
         `company_id` int(11) DEFAULT NULL,
         `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
