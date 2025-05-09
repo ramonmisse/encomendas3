@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                             <tr>
                                 <th>Visualização</th>
                                 <th>Nome</th>
+                                <th>Referência</th>
                                 <th>Descrição</th>
                                 <th class="text-end">Ações</th>
                             </tr>
@@ -89,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                                             </div>
                                         </td>
                                         <td class="fw-medium"><?php echo htmlspecialchars($model['name']); ?></td>
+                                        <td><?php echo htmlspecialchars($model['reference']); ?></td>
                                         <td><?php echo htmlspecialchars($model['description']); ?></td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-1">

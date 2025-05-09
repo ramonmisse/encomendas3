@@ -101,6 +101,7 @@ $orders = $result['data'];
                         <th>Criado por</th>
                         <th>Cliente</th>
                         <th>Modelo</th>
+                        <th>Referência</th>
                         <th>Tipo de Metal</th>
                         <th>Status</th>
                         <th>Data de Entrega</th>
@@ -122,6 +123,7 @@ $orders = $result['data'];
                                 <td><?php echo htmlspecialchars($order['username'] ?? 'N/A'); ?></td>
                                 <td><?php echo isset($order['client']) ? htmlspecialchars($order['client']) : 'N/A'; ?></td>
                                 <td><?php echo htmlspecialchars($order['model']); ?></td>
+                                <td><?php echo htmlspecialchars($order['reference'] ?? 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($order['metal_type']); ?></td>
                                 <td>
                                     <?php

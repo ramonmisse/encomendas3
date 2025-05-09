@@ -115,6 +115,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                                              alt="<?php echo htmlspecialchars($model['name']); ?>" 
                                              class="img-fluid model-image">
                                         <p class="card-text fw-medium"><?php echo htmlspecialchars($model['name']); ?></p>
+                                        <p class="card-text small text-muted">Ref: <?php echo htmlspecialchars($model['reference']); ?></p>
                                     </div>
                                 </div>
                             </div>
