@@ -116,157 +116,108 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
             </div>
         <!-- Users Tab -->
             <div class="tab-pane fade <?php echo $adminTab == 'users' ? 'show active' : ''; ?>" id="users" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="h5 mb-0">Gerenciar Usuários</h3>
-                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                        <i class="fas fa-plus-circle me-1"></i> Adicionar Usuário
-                    </button>
+                <!-- Companies Section -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Gerenciar Empresas</h5>
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                            <i class="fas fa-plus-circle me-1"></i> Adicionar Empresa
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Email</th>
+                                        <th>Telefone</th>
+                                        <th class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($companies as $company): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($company['name']); ?></td>
+                                        <td><?php echo htmlspecialchars($company['email']); ?></td>
+                                        <td><?php echo htmlspecialchars($company['phone']); ?></td>
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary btn-icon edit-company-btn"
+                                                        data-id="<?php echo $company['id']; ?>"
+                                                        data-name="<?php echo htmlspecialchars($company['name']); ?>"
+                                                        data-email="<?php echo htmlspecialchars($company['email']); ?>"
+                                                        data-phone="<?php echo htmlspecialchars($company['phone']); ?>"
+                                                        data-bs-toggle="modal" data-bs-target="#editCompanyModal">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Usuário</th>
-                                <th>Empresa</th>
-                                <th>Tipo</th>
-                                <th>Data de Criação</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($users as $user): ?>
-                            <tr>
-                                <td class="fw-medium"><?php echo htmlspecialchars($user['username']); ?></td>
-                                <td><?php echo htmlspecialchars($user['company_name'] ?? 'Nenhuma'); ?></td>
-                                <td><?php echo $user['role'] == 'admin' ? 'Administrador' : 'Usuário'; ?></td>
-                                <td><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></td>
-                                <td class="text-end">
-                                    <div class="d-flex justify-content-end gap-1">
-                                        <button type="button" class="btn btn-sm btn-outline-danger btn-icon delete-user-btn" 
-                                                data-id="<?php echo $user['id']; ?>" 
-                                                data-bs-toggle="modal" data-bs-target="#deleteUserModal">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                <!-- Users Section -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Gerenciar Usuários</h5>
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                            <i class="fas fa-plus-circle me-1"></i> Adicionar Usuário
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Usuário</th>
+                                        <th>Empresa</th>
+                                        <th>Tipo</th>
+                                        <th>Data de Criação</th>
+                                        <th class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($users as $user): ?>
+                                    <tr>
+                                        <td class="fw-medium"><?php echo htmlspecialchars($user['username']); ?></td>
+                                        <td><?php echo htmlspecialchars($user['company_name'] ?? 'Nenhuma'); ?></td>
+                                        <td><?php echo $user['role'] == 'admin' ? 'Administrador' : 'Usuário'; ?></td>
+                                        <td><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></td>
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary btn-icon edit-user-btn"
+                                                        data-id="<?php echo $user['id']; ?>"
+                                                        data-username="<?php echo htmlspecialchars($user['username']); ?>"
+                                                        data-role="<?php echo htmlspecialchars($user['role']); ?>"
+                                                        data-company-id="<?php echo htmlspecialchars($user['company_id'] ?? ''); ?>"
+                                                        data-bs-toggle="modal" data-bs-target="#editUserModal">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-icon delete-user-btn" 
+                                                        data-id="<?php echo $user['id']; ?>" 
+                                                        data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container mt-4">
-    <div class="row">
-        <!-- Companies Section -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Gerenciar Empresas</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post" class="mb-4">
-                        <input type="hidden" name="add_company" value="1">
-                        <div class="mb-3">
-                            <label class="form-label">Nome da Empresa</label>
-                            <input type="text" name="name" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Telefone</label>
-                            <input type="text" name="phone" class="form-control">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Adicionar Empresa</button>
-                    </form>
 
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Email</th>
-                                <th>Telefone</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($companies as $company): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($company['name']); ?></td>
-                                <td><?php echo htmlspecialchars($company['email']); ?></td>
-                                <td><?php echo htmlspecialchars($company['phone']); ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Users Section -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Gerenciar Usuários</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post" class="mb-4">
-                        <input type="hidden" name="add_user" value="1">
-                        <div class="mb-3">
-                            <label class="form-label">Usuário</label>
-                            <input type="text" name="username" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Senha</label>
-                            <input type="password" name="password" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Tipo de Usuário</label>
-                            <select name="role" class="form-select" required>
-                                <option value="user">Usuário</option>
-                                <option value="admin">Administrador</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Empresa</label>
-                            <select name="company_id" class="form-select">
-                                <option value="">Nenhuma</option>
-                                <?php foreach ($companies as $company): ?>
-                                <option value="<?php echo $company['id']; ?>"><?php echo htmlspecialchars($company['name']); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Adicionar Usuário</button>
-                    </form>
-
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Usuário</th>
-                                <th>Tipo</th>
-                                <th>Empresa</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($users as $user): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($user['username']); ?></td>
-                                <td><?php echo $user['role'] == 'admin' ? 'Administrador' : 'Usuário'; ?></td>
-                                <td><?php echo htmlspecialchars($user['company_name'] ?? 'Nenhuma'); ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Add Model Modal -->
 <div class="modal fade" id="addModelModal" tabindex="-1" aria-labelledby="addModelModalLabel" aria-hidden="true">
@@ -390,6 +341,186 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
             document.getElementById('deleteModelId').value = id;
+        });
+    });
+});
+</script>
+
+<!-- Add Company Modal -->
+<div class="modal fade" id="addCompanyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar Empresa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="add_company" value="1">
+                    <div class="mb-3">
+                        <label class="form-label">Nome da Empresa</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" name="phone" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Company Modal -->
+<div class="modal fade" id="editCompanyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Empresa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="actions/edit_company.php">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="editCompanyId">
+                    <div class="mb-3">
+                        <label class="form-label">Nome da Empresa</label>
+                        <input type="text" name="name" id="editCompanyName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" id="editCompanyEmail" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" name="phone" id="editCompanyPhone" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Atualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="add_user" value="1">
+                    <div class="mb-3">
+                        <label class="form-label">Usuário</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Senha</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Usuário</label>
+                        <select name="role" class="form-select" required>
+                            <option value="user">Usuário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Empresa</label>
+                        <select name="company_id" class="form-select">
+                            <option value="">Nenhuma</option>
+                            <?php foreach ($companies as $company): ?>
+                            <option value="<?php echo $company['id']; ?>"><?php echo htmlspecialchars($company['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="actions/edit_user.php">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="editUserId">
+                    <div class="mb-3">
+                        <label class="form-label">Usuário</label>
+                        <input type="text" name="username" id="editUsername" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nova Senha</label>
+                        <input type="password" name="password" class="form-control" placeholder="Deixe em branco para manter a senha atual">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Usuário</label>
+                        <select name="role" id="editUserRole" class="form-select" required>
+                            <option value="user">Usuário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Empresa</label>
+                        <select name="company_id" id="editUserCompany" class="form-select">
+                            <option value="">Nenhuma</option>
+                            <?php foreach ($companies as $company): ?>
+                            <option value="<?php echo $company['id']; ?>"><?php echo htmlspecialchars($company['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Atualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Company edit button handler
+    document.querySelectorAll('.edit-company-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('editCompanyId').value = this.dataset.id;
+            document.getElementById('editCompanyName').value = this.dataset.name;
+            document.getElementById('editCompanyEmail').value = this.dataset.email;
+            document.getElementById('editCompanyPhone').value = this.dataset.phone;
+        });
+    });
+
+    // User edit button handler
+    document.querySelectorAll('.edit-user-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('editUserId').value = this.dataset.id;
+            document.getElementById('editUsername').value = this.dataset.username;
+            document.getElementById('editUserRole').value = this.dataset.role;
+            document.getElementById('editUserCompany').value = this.dataset.companyId;
         });
     });
 });
