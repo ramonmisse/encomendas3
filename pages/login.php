@@ -1,4 +1,3 @@
-
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -13,20 +12,20 @@ if (isset($_SESSION['user_id'])) {
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     require_once 'includes/config.php';
-    
+
     $username = $_POST['username'];
     $password = $_POST['password'];
-    
+
     $stmt = $pdo->prepare("SELECT u.*, c.name as company_name FROM users u LEFT JOIN companies c ON u.company_id = c.id WHERE u.username = ?");
     $stmt->execute([$username]);
     $user = $stmt->fetch();
-    
+
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['company_id'] = $user['company_id'];
-        $_SESSION['company_name'] = $user['company_name'];
+        error_log("User logged in - ID: " . $user['id'] . ", Role: " . $user['role'] . ", Company ID: " . $user['company_id']);
         header('Location: index.php');
         exit;
     } else {
@@ -53,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php if (isset($error)): ?>
                             <div class="alert alert-danger"><?php echo $error; ?></div>
                         <?php endif; ?>
-                        
+
                         <form method="post">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Usuário</label>

@@ -73,10 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$id]);
             $orderCompanyId = $stmt->fetchColumn();
             
+            error_log("Order access check - User Role: " . $_SESSION['role'] . ", User Company: " . $companyId . ", Order Company: " . $orderCompanyId);
             // Allow superadmin to edit any order, others only their company's orders
             if ($_SESSION['role'] !== 'superadmin' && $orderCompanyId != $companyId) {
+                error_log("Access denied - Not superadmin and companies don't match");
                 throw new Exception('Você não tem permissão para editar este pedido.');
             }
+            error_log("Access granted to order");
             
             // Get existing image URLs if no new images uploaded
             if (empty($imageUrls)) {
