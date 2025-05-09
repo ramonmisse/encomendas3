@@ -3,7 +3,7 @@
 $adminTab = isset($_GET['admin_tab']) ? $_GET['admin_tab'] : 'models';
 
 //Check for admin permissions
-if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'superadmin') {
+if ($_SESSION['role'] !== 'admin') {
     header('Location: index.php');
     exit;
 }

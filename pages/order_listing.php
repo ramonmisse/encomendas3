@@ -194,7 +194,7 @@ $orders = $result['data'];
                                         <?php endif; ?>
 
                                         <!-- Delete button with tooltip - only for admin -->
-                                        <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'superadmin'): ?>
+                                        <?php if ($_SESSION['role'] === 'admin'): ?>
                                         <div class="tooltip-wrapper">
                                             <button class="btn btn-sm btn-outline-danger btn-icon delete-btn" data-id="<?php echo $order['id']; ?>">
                                                 <i class="fas fa-trash"></i>
