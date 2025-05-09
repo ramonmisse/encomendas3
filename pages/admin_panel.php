@@ -42,7 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
         <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link <?php echo $adminTab == 'models' ? 'active' : ''; ?>" 
-                   href="index.php?page=home&tab=admin&admin_tab=models" role="tab">Modelos de Produtos</a>
+                   href="index.php?page=admin_panel&admin_tab=models" role="tab">Modelos de Produtos</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link <?php echo $adminTab == 'users' ? 'active' : ''; ?>" 
+                   href="index.php?page=admin_panel&admin_tab=users" role="tab">Usuários</a>
             </li>
         </ul>
 
@@ -106,6 +110,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <!-- Users Tab -->
+            <div class="tab-pane fade <?php echo $adminTab == 'users' ? 'show active' : ''; ?>" id="users" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="h5 mb-0">Gerenciar Usuários</h3>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="fas fa-plus-circle me-1"></i> Adicionar Usuário
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Empresa</th>
+                                <th>Tipo</th>
+                                <th>Data de Criação</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($users as $user): ?>
+                            <tr>
+                                <td class="fw-medium"><?php echo htmlspecialchars($user['username']); ?></td>
+                                <td><?php echo htmlspecialchars($user['company_name'] ?? 'Nenhuma'); ?></td>
+                                <td><?php echo $user['role'] == 'admin' ? 'Administrador' : 'Usuário'; ?></td>
+                                <td><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-icon delete-user-btn" 
+                                                data-id="<?php echo $user['id']; ?>" 
+                                                data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
