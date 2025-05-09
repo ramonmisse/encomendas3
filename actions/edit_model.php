@@ -10,11 +10,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate and sanitize inputs
     $id = (int)$_POST['id'];
     $name = sanitizeInput($_POST['name']);
+    $reference = sanitizeInput($_POST['reference']);
     $imageUrl = sanitizeInput($_POST['image_url']);
     $description = isset($_POST['description']) ? sanitizeInput($_POST['description']) : '';
     
     // Validate required fields
-    if (empty($id) || empty($name) || empty($imageUrl)) {
+    if (empty($id) || empty($name) || empty($reference) || empty($imageUrl)) {
         // Set error message and redirect back
         $_SESSION['error'] = 'ID, nome e URL da imagem são obrigatórios.';
         header('Location: ../index.php?page=home&tab=admin&admin_tab=models');
@@ -23,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         // Update model in database
-        $stmt = $pdo->prepare("UPDATE product_models SET name = ?, image_url = ?, description = ? WHERE id = ?");
-        $stmt->execute([$name, $imageUrl, $description, $id]);
+        $stmt = $pdo->prepare("UPDATE product_models SET name = ?, reference = ?, image_url = ?, description = ? WHERE id = ?");
+        $stmt->execute([$name, $reference, $imageUrl, $description, $id]);
         
         // Commit transaction
         $pdo->commit();

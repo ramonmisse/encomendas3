@@ -234,6 +234,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                         <input type="text" class="form-control" id="modelName" name="name" required>
                     </div>
                     <div class="mb-3">
+                        <label for="modelReference" class="form-label">Referência</label>
+                        <input type="text" class="form-control" id="modelReference" name="reference" required>
+                    </div>
+                    <div class="mb-3">
                         <label for="modelImageUrl" class="form-label">URL da Imagem</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="modelImageUrl" name="image_url" required>
@@ -270,6 +274,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                     <div class="mb-3">
                         <label for="editModelName" class="form-label">Nome</label>
                         <input type="text" class="form-control" id="editModelName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editModelReference" class="form-label">Referência</label>
+                        <input type="text" class="form-control" id="editModelReference" name="reference" required>
                     </div>
                     <div class="mb-3">
                         <label for="editModelImageUrl" class="form-label">URL da Imagem</label>

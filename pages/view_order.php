@@ -85,6 +85,7 @@ if (!empty($order['image_urls'])) {
                     </div>
                     <div>
                         <h4 class="h6 mb-1"><?php echo htmlspecialchars($model['name']); ?></h4>
+                        <p class="small text-muted mb-0">Ref: <?php echo htmlspecialchars($model['reference']); ?></p>
                     </div>
                 </div>
             </div>
