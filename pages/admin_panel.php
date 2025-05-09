@@ -42,11 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
         <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link <?php echo $adminTab == 'models' ? 'active' : ''; ?>" 
-                   href="index.php?page=admin_panel&admin_tab=models" role="tab">Modelos de Produtos</a>
+                   href="index.php?page=admin&admin_tab=models" role="tab">Modelos de Produtos</a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link <?php echo $adminTab == 'users' ? 'active' : ''; ?>" 
-                   href="index.php?page=admin_panel&admin_tab=users" role="tab">Usuários</a>
+                   href="index.php?page=admin&admin_tab=users" role="tab">Usuários</a>
             </li>
         </ul>
 
