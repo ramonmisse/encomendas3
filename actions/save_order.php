@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($clientName)) $errors[] = 'Nome do cliente é obrigatório';
     if (empty($deliveryDate)) $errors[] = 'Data de entrega é obrigatória';
     if (empty($metalType)) $errors[] = 'Tipo de metal é obrigatório';
-    
+
     if (!empty($errors)) {
         error_log('Validation failed: ' . json_encode([
             'userId'       => $userId,
@@ -132,11 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute($params);
-                
+
                 if ($stmt->rowCount() > 0) {
                     $pdo->commit();
                     $_SESSION['success'] = 'Pedido atualizado com sucesso!';
-                    header('Location: ../index.php?page=home&tab=orders&status=success&message='.urlencode('Pedido atualizado com sucesso!'));
+                    echo json_encode(['success' => true, 'message' => 'Pedido atualizado com sucesso!']);
                     exit;
                 } else {
                     throw new Exception('Nenhuma alteração foi feita no pedido.');

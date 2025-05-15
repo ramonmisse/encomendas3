@@ -395,7 +395,33 @@ $orders = $result['data'];
             .then(response => response.text())
             .then(html => {
                 modalBody.innerHTML = html;
-                new bootstrap.Modal(document.getElementById('editOrderModal')).show();
+                const modal = new bootstrap.Modal(document.getElementById('editOrderModal'));
+                modal.show();
+                
+                // Add form submission handler
+                const form = modalBody.querySelector('form');
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            modal.hide();
+                            window.location.reload();
+                        } else {
+                            alert(result.message || 'Erro ao salvar pedido');
+                        }
+                    } catch (error) {
+                        console.error('Error saving order:', error);
+                        alert('Erro ao salvar pedido');
+                    }
+                });
             })
             .catch(error => {
                 console.error('Error loading order form:', error);
