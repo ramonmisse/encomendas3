@@ -42,13 +42,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notes            = sanitizeInput($_POST['notes']  ?? '');
 
     // Validação básica (sem checar $companyId aqui)
-    if (
-        $userId <= 0             ||
-        $modelId <= 0            ||
-        empty($clientName)       ||
-        empty($deliveryDate)     ||
-        empty($metalType)
-    ) {
+    $errors = [];
+    if ($userId <= 0) $errors[] = 'Usuário inválido';
+    if ($modelId <= 0) $errors[] = 'Selecione um modelo';
+    if (empty($clientName)) $errors[] = 'Nome do cliente é obrigatório';
+    if (empty($deliveryDate)) $errors[] = 'Data de entrega é obrigatória';
+    if (empty($metalType)) $errors[] = 'Tipo de metal é obrigatório';
+    
+    if (!empty($errors)) {
         error_log('Validation failed: ' . json_encode([
             'userId'       => $userId,
             'clientName'   => $clientName,
@@ -58,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'companyId'    => $companyId,
             'isGlobalAdmin'=> $isGlobalAdmin
         ]));
-        $_SESSION['error'] = 'Todos os campos obrigatórios devem ser preenchidos.';
+        $_SESSION['error'] = 'Campos obrigatórios: ' . implode(', ', $errors);
         header('Location: ../index.php?page=home&tab=new-order');
         exit;
     }
