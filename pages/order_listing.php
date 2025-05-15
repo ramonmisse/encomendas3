@@ -327,7 +327,11 @@ $orders = $result['data'];
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            console.log('Order data:', data); // For debugging
+            console.log('Order data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
             
             const modalBody = document.getElementById('viewOrderDetails');
             modalBody.innerHTML = `
@@ -335,7 +339,7 @@ $orders = $result['data'];
                     <div class="col-md-6">
                         <p><strong>ID do Pedido:</strong> ${data.id || 'N/A'}</p>
                         <p><strong>Criado por:</strong> ${data.user || 'N/A'}</p>
-                        <p><strong>Cliente:</strong> ${data.client_name || 'N/A'}</p>
+                        <p><strong>Cliente:</strong> ${data.client || 'N/A'}</p>
                         <p><strong>Modelo:</strong> ${data.model || 'N/A'}</p>
                         <p><strong>Referência:</strong> ${data.reference || 'N/A'}</p>
                     </div>

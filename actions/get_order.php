@@ -2,8 +2,9 @@
 require_once '../includes/config.php';
 require_once '../includes/functions.php';
 
-// Prevent PHP errors from being output
-error_reporting(0);
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Set JSON content type header
 header('Content-Type: application/json');
