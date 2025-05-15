@@ -325,31 +325,55 @@ $orders = $result['data'];
             .then(response => response.json())
             .then(data => {
                 const modalBody = document.getElementById('viewOrderDetails');
+                const images = data.image_urls ? JSON.parse(data.image_urls) : [];
                 modalBody.innerHTML = `
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Criado por:</strong> ${data.username}</p>
-                            <p><strong>Cliente:</strong> ${data.client_name}</p>
-                            <p><strong>Modelo:</strong> ${data.model_name}</p>
+                            <p><strong>Criado por:</strong> ${data.user || 'N/A'}</p>
+                            <p><strong>Cliente:</strong> ${data.client_name || 'N/A'}</p>
+                            <p><strong>Modelo:</strong> ${data.model || 'N/A'}</p>
+                            <p><strong>Referência:</strong> ${data.reference || 'N/A'}</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Tipo de Metal:</strong> ${data.metal_type}</p>
-                            <p><strong>Data de Entrega:</strong> ${data.delivery_date}</p>
+                            <p><strong>Tipo de Metal:</strong> ${data.metal_type || 'N/A'}</p>
+                            <p><strong>Data de Entrega:</strong> ${data.delivery_date || 'N/A'}</p>
+                            <p><strong>Status:</strong> <span class="badge ${getStatusColor(data.status)}">${data.status || 'N/A'}</span></p>
                         </div>
                     </div>
                     ${data.notes ? `<div class="mt-3"><strong>Observações:</strong><p>${data.notes}</p></div>` : ''}
-                    ${data.image_urls ? `
+                    ${images.length > 0 ? `
                         <div class="mt-3">
                             <strong>Imagens:</strong>
                             <div class="row mt-2">
-                                ${JSON.parse(data.image_urls).map(url => `
+                                ${images.map(url => `
                                     <div class="col-md-4 mb-2">
-                                        <img src="${url}" class="img-fluid rounded" alt="Imagem do pedido">
+                                        <div class="card h-100">
+                                            <img src="${url}" class="card-img-top" alt="Imagem do pedido">
+                                            <div class="card-footer p-2 text-center">
+                                                <a href="${url}" download class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-download me-1"></i> Baixar
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
                     ` : ''}
+                `;
+            });
+    }
+
+    function getStatusColor(status) {
+        const statusColors = {
+            'Em produção': 'bg-primary',
+            'Gravado': 'bg-info',
+            'Separado': 'bg-warning',
+            'Enviado': 'bg-success',
+            'Entregue': 'bg-secondary'
+        };
+        return statusColors[status] || 'bg-secondary';
+    }
                 `;
                 new bootstrap.Modal(document.getElementById('viewOrderModal')).show();
             });
