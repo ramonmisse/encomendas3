@@ -151,7 +151,7 @@ $orders = $result['data'];
                                                 <i class="fas fa-image"></i>
                                             </button>
                                             <div class="hover-card-content">
-                                                <img src="<?php echo htmlspecialchars($firstImage); ?>" alt="Order reference" class="img-fluid rounded" onerror="this.onerror=null; this.src='assets/images/no-image.png'; this.alt='Image not found';">
+                                                <img src="<?php echo htmlspecialchars($firstImage); ?>" alt="Order reference" class="img-fluid rounded" onerror="this.onerror=null; this.src='/uploads/no-image.png'; this.alt='Image not found';">
                                             </div>
                                         </div>
                                         <?php else: ?>
