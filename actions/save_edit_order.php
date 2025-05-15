@@ -14,14 +14,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $modelId = (int)($_POST['model_id'] ?? 0);
         $deliveryDate = sanitizeInput($_POST['delivery_date'] ?? '');
         $deliveryTime = sanitizeInput($_POST['delivery_time'] ?? '00:00');
-        $deliveryDateTime = $deliveryDate . ' ' . $deliveryTime;
         $metalType = sanitizeInput($_POST['metal_type'] ?? '');
         $status = sanitizeInput($_POST['status'] ?? 'Em produção');
         $notes = sanitizeInput($_POST['notes'] ?? '');
 
         // Validação básica
-        if ($id <= 0 || empty($clientName) || $modelId <= 0 || empty($deliveryDate) || empty($metalType)) {
+        if ($id <= 0 || empty($clientName) || $modelId <= 0 || empty($deliveryDate)) {
             throw new Exception('Todos os campos obrigatórios devem ser preenchidos.');
+        }
+
+        // Valida formato da data
+        $date = DateTime::createFromFormat('Y-m-d', $deliveryDate);
+        if (!$date || $date->format('Y-m-d') !== $deliveryDate) {
+            throw new Exception('Data inválida');
         }
 
         // Busca o pedido atual
@@ -43,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 client_name = ?,
                 model_id = ?,
                 delivery_date = ?,
+                delivery_time = ?,
                 metal_type = ?,
                 status = ?,
                 notes = ?
@@ -52,7 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $success = $stmt->execute([
             $clientName,
             $modelId,
-            $deliveryDateTime,
+            $deliveryDate,
+            $deliveryTime,
             $metalType,
             $status,
             $notes,
@@ -60,7 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
 
         if (!$success) {
-            throw new Exception('Erro ao atualizar pedido no banco de dados');
+            $errorInfo = $stmt->errorInfo();
+            throw new Exception("Erro SQL: {$errorInfo[0]} - {$errorInfo[2]}");
         }
 
         // Gerencia upload de novas imagens
@@ -71,10 +79,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
                 if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
                     $fileName = time() . '_' . $_FILES['images']['name'][$key];
-                    $filePath = $uploadDir . $fileName;
+                    $diskPath = $uploadDir . $fileName;
+                    $webPath = 'uploads/' . $fileName;
                     
-                    if (move_uploaded_file($tmpName, $filePath)) {
-                        $uploadedFiles[] = 'uploads/' . $fileName;
+                    if (move_uploaded_file($tmpName, $diskPath)) {
+                        $uploadedFiles[] = $webPath;
                     }
                 }
             }
