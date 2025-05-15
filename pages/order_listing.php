@@ -5,14 +5,11 @@ $filters = [
     'end_date' => isset($_GET['end_date']) ? $_GET['end_date'] : '',
     'model_id' => isset($_GET['model_id']) ? $_GET['model_id'] : '',
     'status' => isset($_GET['status']) ? $_GET['status'] : '',
-    'company_id' => ($_SESSION['role'] === 'admin' && isset($_GET['company_id'])) ? $_GET['company_id'] : $_SESSION['company_id']
+    'company_id' => isset($_GET['company_id']) ? $_GET['company_id'] : null
 ];
 
-// Get companies for admin filter
-$companies = [];
-if ($_SESSION['role'] === 'admin') {
-    $companies = $pdo->query("SELECT * FROM companies ORDER BY name")->fetchAll();
-}
+// Get all companies for filter
+$companies = $pdo->query("SELECT * FROM companies ORDER BY name")->fetchAll();
 
 // Get current page from URL
 $currentPage = isset($_GET['pg']) ? max(1, intval($_GET['pg'])) : 1;
