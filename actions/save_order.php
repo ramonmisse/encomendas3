@@ -73,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $orderCompanyId = (int) $row['company_id'];
 
-            // Autorização: só bloqueia se NÃO for global e company diferente
-            if (! $isGlobalAdmin && $orderCompanyId !== $companyId) {
+            // Autorização: admin pode editar qualquer pedido
+            if ($_SESSION['role'] !== 'admin' && $orderCompanyId !== $companyId) {
                 throw new Exception('Você não tem permissão para editar este pedido.');
             }
 
