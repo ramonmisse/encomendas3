@@ -1,0 +1,87 @@
+O principal “descaso” aqui está na forma como você monta e grava a data/hora, e como isso se “alinha” (ou deixa de) com o esquema da sua tabela:
+
+Coluna delivery_date vs. date/time
+
+Você faz
+
+php
+Copiar
+Editar
+$deliveryDateTime = $deliveryDate . ' ' . $deliveryTime;
+mas o UPDATE só grava em delivery_date. Se essa coluna é do tipo DATE, ela vai truncar tudo após o “YYYY-MM-DD” (ou até dar erro). Se for DATETIME, o nome da coluna (“date”) não bate com o conteúdo que você está jogando ali.
+
+Solução:
+
+Se você quiser gravar só a data, faça
+
+php
+Copiar
+Editar
+delivery_date = ?  // bind $deliveryDate (YYYY-MM-DD)
+Se quiser armazenar data e hora, ou:
+
+a) torne a coluna delivery_datetime (ou similar) tipo DATETIME e atualize-a;
+
+b) mantenha as duas colunas (delivery_date e delivery_time) e grave ambas no UPDATE:
+
+php
+Copiar
+Editar
+$sql = "UPDATE orders SET
+            client_name   = ?,
+            model_id      = ?,
+            delivery_date = ?,
+            delivery_time = ?,
+            metal_type    = ?,
+            status        = ?,
+            notes         = ?
+        WHERE id = ?";
+$stmt->execute([
+    $clientName,
+    $modelId,
+    $deliveryDate,
+    $deliveryTime,
+    $metalType,
+    $status,
+    $notes,
+    $id
+]);
+Caminho dos uploads
+
+No move_uploaded_file você salva em ../uploads/ mas depois armazena só uploads/… no banco. Isso pode gerar 404 ao exibir a imagem.
+
+Ajuste: ou grave o caminho completo (../uploads/arquivo.jpg) ou, melhor ainda, padronize para gravar o URL relativo à raiz pública, ex.:
+
+php
+Copiar
+Editar
+$fileName = time().'_'.$_FILES['images']['name'][$key];
+$webPath  = '/uploads/'.$fileName;           // para usar em <img src>
+$diskPath = __DIR__.'/../public/uploads/'.$fileName; // caminho físico
+move_uploaded_file($tmpName, $diskPath);
+$uploadedFiles[] = $webPath;
+Modo de erro do PDO
+
+Certifique-se de que, no seu config.php, você tenha:
+
+php
+Copiar
+Editar
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+Assim, qualquer falha de SQL já vai disparar exceção em vez de execute() retornar false silenciosamente.
+
+Validação mais robusta
+
+Você checa apenas empty($deliveryDate), mas não garante que seja uma data no formato YYYY-MM-DD. Recomendo usar DateTime::createFromFormat() para validar.
+
+Debugging rápido
+
+Se o UPDATE não estiver acontecendo, logo após o execute(), capture:
+
+php
+Copiar
+Editar
+if (!$success) {
+    $errorInfo = $stmt->errorInfo();
+    throw new Exception("SQLSTATE: {$errorInfo[0]} – {$errorInfo[2]}");
+}
