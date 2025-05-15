@@ -43,11 +43,14 @@ $models = getProductModels($pdo);
         <div class="col-md-6">
             <label for="model_id" class="form-label">Modelo</label>
             <select class="form-select" id="model_id" name="model_id" required>
-                <?php foreach ($models as $model): ?>
-                    <option value="<?php echo $model['id']; ?>" <?php echo $order['model_id'] == $model['id'] ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($model['name']); ?>
-                    </option>
-                <?php endforeach; ?>
+                <?php if (!empty($models)): ?>
+                    <?php foreach ($models as $model): ?>
+                        <option value="<?php echo isset($model['id']) ? $model['id'] : ''; ?>" 
+                            <?php echo (isset($order['model_id']) && isset($model['id']) && $order['model_id'] == $model['id']) ? 'selected' : ''; ?>>
+                            <?php echo isset($model['name']) ? htmlspecialchars($model['name']) : ''; ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </select>
         </div>
 
