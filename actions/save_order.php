@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             status        = ?,
                             notes         = ?,
                             image_urls    = ?
-                        WHERE id = ? AND company_id = ?";
+                        WHERE id = ?";
                 $params = [
                     $clientName,
                     $deliveryDateTime,
@@ -117,8 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $status,
                     $notes,
                     $row['image_urls'] ?? null,
-                    $id,
-                    $companyId
+                    $id
                 ];
             }
 
