@@ -81,9 +81,17 @@ if (isset($_GET['id'])) {
                     <!-- Delivery Date -->
                     <div class="col-md-6 mb-3">
                         <label for="deliveryDate" class="form-label">Data e Hora de Entrega</label>
-                        <input type="date" class="form-control" id="deliveryDate" name="delivery_date" 
-                               value="<?php echo $isEditing ? date('Y-m-d', strtotime($order['delivery_date'])) : ''; ?>" 
-                               min="<?php echo date('Y-m-d'); ?>" required>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="date" class="form-control" id="deliveryDate" name="delivery_date" 
+                                       value="<?php echo $isEditing ? date('Y-m-d', strtotime($order['delivery_date'])) : ''; ?>" 
+                                       min="<?php echo date('Y-m-d'); ?>" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="time" class="form-control" id="deliveryTime" name="delivery_time" 
+                                       value="<?php echo $isEditing ? date('H:i', strtotime($order['delivery_date'])) : ''; ?>" required>
+                            </div>
+                        </div>
                         <div class="invalid-feedback">Por favor, selecione uma data e hora de entrega válida.</div>
                     </div>
                 </div>

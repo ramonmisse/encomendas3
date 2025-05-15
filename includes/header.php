@@ -40,9 +40,3 @@
 
     <!-- Main Content -->
     <main class="container py-4">
-    <!-- Bootstrap JS (optional, but often used for certain components) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom scripts -->
-    <script src="/assets/js/scripts.js"></script>
-</body>
-</html>

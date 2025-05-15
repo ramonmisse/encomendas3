@@ -17,8 +17,8 @@ function getOrders(PDO $pdo, array $filters = [], int $page = 1, int $perPage = 
         $where  = [];
         $params = [];
 
-        // Apply company filter for non-admin users
-        if ($role !== 'admin') {
+        // Apply company filter for non-global admins
+        if (! $isGlobal) {
             $where[]  = "o.company_id = ?";
             $params[] = $companyId;
         }
@@ -109,17 +109,16 @@ SQL;
 function getOrderById(PDO $pdo, int $orderId)
 {
     // Session and permission
-    $role = $_SESSION['role'] ?? null;
-    
-    // Se for admin, pode ver qualquer pedido
-    if ($role === 'admin') {
-        $sql = 'SELECT * FROM orders WHERE id = ?';
+    $role      = $_SESSION['role'] ?? null;
+    $companyId = isset($_SESSION['company_id']) ? (int) $_SESSION['company_id'] : null;
+    $isGlobal  = ($role === 'admin' && $companyId === 0);
+
+    if ($isGlobal) {
+        $sql  = 'SELECT * FROM orders WHERE id = ?';
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$orderId]);
     } else {
-        // Usuários normais só veem pedidos da própria empresa
-        $companyId = (int)$_SESSION['company_id'];
-        $sql = 'SELECT * FROM orders WHERE id = ? AND company_id = ?';
+        $sql  = 'SELECT * FROM orders WHERE id = ? AND company_id = ?';
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$orderId, $companyId]);
     }
