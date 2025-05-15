@@ -323,18 +323,22 @@ $orders = $result['data'];
     async function viewOrder(orderId) {
         try {
             const response = await fetch(`actions/get_order.php?id=${orderId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
             const data = await response.json();
+            console.log('Order data:', data); // For debugging
             
             const modalBody = document.getElementById('viewOrderDetails');
-            const images = data.image_urls ? JSON.parse(data.image_urls) : [];
             modalBody.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Criado por:</strong> ${data.user || 'N/A'}</p>
-                            <p><strong>Cliente:</strong> ${data.client || 'N/A'}</p>
-                            <p><strong>Modelo:</strong> ${data.model || 'N/A'}</p>
-                            <p><strong>Referência:</strong> ${data.reference || 'N/A'}</p>
-                        </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <p><strong>ID do Pedido:</strong> ${data.id || 'N/A'}</p>
+                        <p><strong>Criado por:</strong> ${data.user || 'N/A'}</p>
+                        <p><strong>Cliente:</strong> ${data.client_name || 'N/A'}</p>
+                        <p><strong>Modelo:</strong> ${data.model || 'N/A'}</p>
+                        <p><strong>Referência:</strong> ${data.reference || 'N/A'}</p>
+                    </div>
                         <div class="col-md-6">
                             <p><strong>Tipo de Metal:</strong> ${data.metal_type || 'N/A'}</p>
                             <p><strong>Data de Entrega:</strong> ${data.delivery_date || 'N/A'}</p>
@@ -342,14 +346,14 @@ $orders = $result['data'];
                         </div>
                     </div>
                     ${data.notes ? `<div class="mt-3"><strong>Observações:</strong><p>${data.notes}</p></div>` : ''}
-                    ${images.length > 0 ? `
+                    ${data.image_urls ? `
                         <div class="mt-3">
                             <strong>Imagens:</strong>
                             <div class="row mt-2">
-                                ${images.map(url => `
+                                ${JSON.parse(data.image_urls).map(url => `
                                     <div class="col-md-4 mb-2">
                                         <div class="card h-100">
-                                            <img src="${url}" class="card-img-top" alt="Imagem do pedido">
+                                            <img src="${url}" class="card-img-top" alt="Imagem do pedido" style="object-fit: cover; height: 200px;">
                                             <div class="card-footer p-2 text-center">
                                                 <a href="${url}" download class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-download me-1"></i> Baixar
