@@ -6,19 +6,27 @@ require_once '../includes/functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdo->beginTransaction();
-    
+
     try {
-        // Validação do ID do pedido
+        // Dados do pedido
         $id = (int)$_POST['id'];
-        if (!$id) {
-            throw new Exception('ID do pedido inválido');
+        $clientName = sanitizeInput($_POST['client_name'] ?? '');
+        $modelId = (int)($_POST['model_id'] ?? 0);
+        $deliveryDate = sanitizeInput($_POST['delivery_date'] ?? '');
+        $metalType = sanitizeInput($_POST['metal_type'] ?? '');
+        $status = sanitizeInput($_POST['status'] ?? '');
+        $notes = sanitizeInput($_POST['notes'] ?? '');
+
+        // Validação básica
+        if ($id <= 0 || empty($clientName) || $modelId <= 0 || empty($deliveryDate) || empty($metalType)) {
+            throw new Exception('Todos os campos obrigatórios devem ser preenchidos.');
         }
 
-        // Busca pedido atual
+        // Busca o pedido atual
         $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
         $stmt->execute([$id]);
         $order = $stmt->fetch();
-        
+
         if (!$order) {
             throw new Exception('Pedido não encontrado');
         }
@@ -28,16 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Sem permissão para editar este pedido');
         }
 
-        // Sanitização dos dados
-        $clientName = sanitizeInput($_POST['client_name'] ?? '');
-        $modelId = (int)($_POST['model_id'] ?? 0);
-        $deliveryDate = sanitizeInput($_POST['delivery_date'] ?? '');
-        $deliveryTime = sanitizeInput($_POST['delivery_time'] ?? '00:00');
-        $deliveryDateTime = $deliveryDate . ' ' . $deliveryTime;
-        $metalType = sanitizeInput($_POST['metal_type'] ?? '');
-        $status = sanitizeInput($_POST['status'] ?? '');
-        $notes = sanitizeInput($_POST['notes'] ?? '');
-
         // Atualiza o pedido
         $sql = "UPDATE orders SET 
                 client_name = ?,
@@ -45,15 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 delivery_date = ?,
                 metal_type = ?,
                 status = ?,
-                notes = ?,
-                updated_at = NOW()
+                notes = ?
                 WHERE id = ?";
 
         $stmt = $pdo->prepare($sql);
         $success = $stmt->execute([
             $clientName,
             $modelId,
-            $deliveryDateTime,
+            $deliveryDate,
             $metalType,
             $status,
             $notes,
@@ -66,29 +63,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Gerencia upload de novas imagens
         if (!empty($_FILES['images']['name'][0])) {
-            $uploadDir = '../uploads/';
-            $imageUrls = [];
-            
-            // Mantém imagens existentes
-            if (!empty($order['image_urls'])) {
-                $imageUrls = json_decode($order['image_urls'], true) ?: [];
-            }
-
-            foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
-                if ($_FILES['images']['error'][$key] === 0) {
-                    $fileName = time() . '_' . $_FILES['images']['name'][$key];
-                    $filePath = $uploadDir . $fileName;
+            $uploadedFiles = [];
+            foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
+                if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
+                    $filename = time() . '_' . $_FILES['images']['name'][$key];
+                    $filepath = '../uploads/' . $filename;
                     
-                    if (move_uploaded_file($tmpName, $filePath)) {
-                        $imageUrls[] = 'uploads/' . $fileName;
+                    if (move_uploaded_file($tmp_name, $filepath)) {
+                        $uploadedFiles[] = $filename;
                     }
                 }
             }
-
-            // Atualiza URLs das imagens
-            if (!empty($imageUrls)) {
+            
+            if (!empty($uploadedFiles)) {
+                // Combina as novas imagens com as existentes
+                $currentImages = json_decode($order['image_urls'], true) ?: [];
+                $allImages = array_merge($currentImages, $uploadedFiles);
+                
                 $stmt = $pdo->prepare("UPDATE orders SET image_urls = ? WHERE id = ?");
-                $stmt->execute([json_encode($imageUrls), $id]);
+                $stmt->execute([json_encode($allImages), $id]);
             }
         }
 
