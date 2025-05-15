@@ -13,8 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $clientName = sanitizeInput($_POST['client_name'] ?? '');
         $modelId = (int)($_POST['model_id'] ?? 0);
         $deliveryDate = sanitizeInput($_POST['delivery_date'] ?? '');
+        $deliveryTime = sanitizeInput($_POST['delivery_time'] ?? '00:00');
+        $deliveryDateTime = $deliveryDate . ' ' . $deliveryTime;
         $metalType = sanitizeInput($_POST['metal_type'] ?? '');
-        $status = sanitizeInput($_POST['status'] ?? '');
+        $status = sanitizeInput($_POST['status'] ?? 'Em produção');
         $notes = sanitizeInput($_POST['notes'] ?? '');
 
         // Validação básica
@@ -31,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Pedido não encontrado');
         }
 
-        // Verifica permissão - admin pode editar qualquer pedido
+        // Verifica permissão
         if ($_SESSION['role'] !== 'admin' && $order['company_id'] != $_SESSION['company_id']) {
             throw new Exception('Sem permissão para editar este pedido');
         }
@@ -50,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $success = $stmt->execute([
             $clientName,
             $modelId,
-            $deliveryDate,
+            $deliveryDateTime,
             $metalType,
             $status,
             $notes,
@@ -63,20 +65,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Gerencia upload de novas imagens
         if (!empty($_FILES['images']['name'][0])) {
+            $uploadDir = '../uploads/';
             $uploadedFiles = [];
-            foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
+            
+            foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
                 if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
-                    $filename = time() . '_' . $_FILES['images']['name'][$key];
-                    $filepath = '../uploads/' . $filename;
+                    $fileName = time() . '_' . $_FILES['images']['name'][$key];
+                    $filePath = $uploadDir . $fileName;
                     
-                    if (move_uploaded_file($tmp_name, $filepath)) {
-                        $uploadedFiles[] = $filename;
+                    if (move_uploaded_file($tmpName, $filePath)) {
+                        $uploadedFiles[] = 'uploads/' . $fileName;
                     }
                 }
             }
             
             if (!empty($uploadedFiles)) {
-                // Combina as novas imagens com as existentes
                 $currentImages = json_decode($order['image_urls'], true) ?: [];
                 $allImages = array_merge($currentImages, $uploadedFiles);
                 
@@ -86,12 +89,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $pdo->commit();
-        echo json_encode(['success' => true, 'message' => 'Pedido atualizado com sucesso!']);
+        $_SESSION['success'] = 'Pedido atualizado com sucesso!';
+        header('Location: ../index.php?page=orders');
         exit;
 
     } catch (Exception $e) {
         $pdo->rollBack();
-        echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
+        $_SESSION['error'] = 'Erro ao atualizar pedido: ' . $e->getMessage();
+        header('Location: ../index.php?page=orders');
         exit;
     }
 }
