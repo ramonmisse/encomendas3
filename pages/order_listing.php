@@ -320,13 +320,14 @@ $orders = $result['data'];
 </div>
 
 <script>
-    function viewOrder(orderId) {
-        fetch(`actions/get_order.php?id=${orderId}`)
-            .then(response => response.json())
-            .then(data => {
-                const modalBody = document.getElementById('viewOrderDetails');
-                const images = data.image_urls ? JSON.parse(data.image_urls) : [];
-                modalBody.innerHTML = `
+    async function viewOrder(orderId) {
+        try {
+            const response = await fetch(`actions/get_order.php?id=${orderId}`);
+            const data = await response.json();
+            
+            const modalBody = document.getElementById('viewOrderDetails');
+            const images = data.image_urls ? JSON.parse(data.image_urls) : [];
+            modalBody.innerHTML = `
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Criado por:</strong> ${data.user || 'N/A'}</p>
@@ -361,8 +362,12 @@ $orders = $result['data'];
                         </div>
                     ` : ''}
                 `;
-                new bootstrap.Modal(document.getElementById('viewOrderModal')).show();
-            });
+                const modal = new bootstrap.Modal(document.getElementById('viewOrderModal'));
+                modal.show();
+        } catch (error) {
+            console.error('Error loading order details:', error);
+            alert('Erro ao carregar detalhes do pedido');
+        }
     }
 
     function getStatusColor(status) {
