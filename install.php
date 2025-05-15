@@ -41,9 +41,13 @@ try {
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `username` varchar(50) NOT NULL,
         `password` varchar(255) NOT NULL,
+        `role` enum('admin','user') NOT NULL DEFAULT 'user',
+        `company_id` int(11) DEFAULT NULL,
         `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
-        UNIQUE KEY `username` (`username`)
+        UNIQUE KEY `username` (`username`),
+        KEY `company_id` (`company_id`),
+        CONSTRAINT `users_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     echo "<p>Tabela 'users' criada.</p>";
 
