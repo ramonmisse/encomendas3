@@ -18,9 +18,15 @@ function getOrders(PDO $pdo, array $filters = [], int $page = 1, int $perPage = 
         $params = [];
 
         // Apply company filter for non-global admins
-        if (! $isGlobal) {
-            $where[]  = "o.company_id = ?";
+        if (!$isGlobal && !empty($filters['company_id'])) {
+            $where[] = "o.company_id = ?";
+            $params[] = $filters['company_id'];
+        } elseif (!$isGlobal) {
+            $where[] = "o.company_id = ?";
             $params[] = $companyId;
+        } elseif ($isGlobal && !empty($filters['company_id'])) {
+            $where[] = "o.company_id = ?";
+            $params[] = $filters['company_id'];
         }
 
         // Date filters

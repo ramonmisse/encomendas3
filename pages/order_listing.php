@@ -43,9 +43,11 @@ $orders = $result['data'];
                     <option value="">Todos os Modelos</option>
                     <?php
                     $models = getProductModels($pdo);
-                    foreach ($models as $model) {
-                        $selected = ($filters['model_id'] == $model['id']) ? 'selected' : '';
-                        echo "<option value=\"{$model['id']}\" {$selected}>{$model['name']}</option>";
+                    if (!empty($models['data'])) {
+                        foreach ($models['data'] as $model) {
+                            $selected = ($filters['model_id'] == $model['id']) ? 'selected' : '';
+                            echo "<option value=\"{$model['id']}\" {$selected}>{$model['name']} - {$model['reference']}</option>";
+                        }
                     }
                     ?>
                 </select>
