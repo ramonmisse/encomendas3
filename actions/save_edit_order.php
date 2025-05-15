@@ -5,6 +5,11 @@ require_once '../includes/config.php';
 require_once '../includes/functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Log detalhado dos dados recebidos
+    error_log('Iniciando salvamento do pedido');
+    error_log('POST data: ' . print_r($_POST, true));
+    error_log('FILES data: ' . print_r($_FILES, true));
+    
     $pdo->beginTransaction();
 
     try {
@@ -110,9 +115,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $params[] = $id;
 
         $stmt = $pdo->prepare($sql);
+        error_log('SQL Query: ' . $sql);
+        error_log('Params: ' . print_r($params, true));
         $success = $stmt->execute($params);
-
+        
         if (!$success) {
+            error_log('Erro na execução do SQL: ' . print_r($stmt->errorInfo(), true));
             $errorInfo = $stmt->errorInfo();
             throw new Exception("Erro SQL: {$errorInfo[0]} - {$errorInfo[2]}");
         }
