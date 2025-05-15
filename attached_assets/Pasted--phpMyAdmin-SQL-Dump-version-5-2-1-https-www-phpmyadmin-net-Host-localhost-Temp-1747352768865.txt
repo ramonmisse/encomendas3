@@ -1,0 +1,280 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: localhost
+-- Tempo de geração: 15/05/2025 às 23:44
+-- Versão do servidor: 10.6.18-MariaDB-0ubuntu0.22.04.1
+-- Versão do PHP: 8.0.30
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Banco de dados: `dili_encomendas_teste`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `companies`
+--
+
+CREATE TABLE `companies` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `companies`
+--
+
+INSERT INTO `companies` (`id`, `name`, `email`, `phone`, `created_at`) VALUES
+(0, 'Master', 'smart@smartjoias.com.br', '22999622551', '2025-05-15 11:20:24'),
+(3, 'Loja Centro', 'dilima.loja2@gmail.com', '2299999999', '2025-05-01 16:51:31'),
+(4, 'DiLima Showroom', 'dilima.showroom@gmail.com', '2299999999', '2025-05-01 17:02:59'),
+(5, 'Smart Brutos', 'suportelaysdelima@gmail.com', '', '2025-05-02 15:18:15');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `model_variations`
+--
+
+CREATE TABLE `model_variations` (
+  `id` int(11) NOT NULL,
+  `model_id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `orders`
+--
+
+CREATE TABLE `orders` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `client_name` varchar(100) NOT NULL,
+  `delivery_date` date NOT NULL,
+  `model_id` int(11) NOT NULL,
+  `metal_type` varchar(20) NOT NULL,
+  `status` varchar(20) DEFAULT 'Em produção',
+  `notes` text DEFAULT NULL,
+  `image_urls` text DEFAULT NULL,
+  `company_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `client_name`, `delivery_date`, `model_id`, `metal_type`, `status`, `notes`, `image_urls`, `company_id`, `created_at`) VALUES
+(104, 1, 'teste', '2025-05-10', 21, 'gold', 'Em produção', 'testae', NULL, 4, '2025-05-09 11:53:30'),
+(109, 7, 'daskk123', '2025-05-23', 32, 'silver', 'Separado', 'asd12kjkljkljlddsda', '[\"uploads\\/1747325282_DIAMANTE.png\"]', 4, '2025-05-15 13:08:02'),
+(110, 7, 'teste', '2025-05-16', 31, 'gold', 'Gravado', 'tetete', NULL, 4, '2025-05-15 20:32:10');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `product_models`
+--
+
+CREATE TABLE `product_models` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `reference` varchar(50) DEFAULT NULL,
+  `image_url` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `product_models`
+--
+
+INSERT INTO `product_models` (`id`, `name`, `reference`, `image_url`, `description`) VALUES
+(21, '46345394 Pingente Fotogravaçao + Frase 16mm Dourado', '1', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2024/ef97e5f7bfdb24bdcce5e922c2c803ab.jpg', ''),
+(22, '86444811 Pingente Fotogravaçao 16mm Dourado', '2', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2024/b1fb86f276b2a5ba1484adad05527cd2.jpg', ''),
+(23, '61075825 Pingente Fotogravaçao 16mm Prata', '3', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2024/bf323b20053815865e0a43137bab5c8a.jpg', ''),
+(24, '79226479 Pingente Fotogravaçao 25mm Dourado', '4', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2024/fc35a37a2e2a421468180d53cf32fc65.jpg', ''),
+(25, '77500779 Pingente Fotogravaçao + Frase 16mm Prata', '5', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2025/571c2579498b8137b5a43a69f0a6dfaa.jpg', ''),
+(26, '83281990 Pingente Fotogravaçao 25mm Prata', '6', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2024/bf323b20053815865e0a43137bab5c8a.jpg', ''),
+(27, '49738452 Pingente Fotogravaçao + Frase 25mm Prata', '7', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2024/bf323b20053815865e0a43137bab5c8a.jpg', ''),
+(28, '72838259 Pingente Fotogravaçao + Frase 25mm Dourado', '8', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2024/b1fb86f276b2a5ba1484adad05527cd2.jpg', ''),
+(29, '94631340 Pingente Retangular Fotogravação Olhar Corrente Veneziana Dourado', '9', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2025/abd88417f940b0628c4b40bb783b0189.jpg', ''),
+(30, '81157976 Pingente Retangular Fotogravação Olhar Corrente Veneziana Prata', '10', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2025/abd88417f940b0628c4b40bb783b0189.jpg', ''),
+(31, '44015107 Colar Nome Zircônias Intercaladas Prata', '11', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2021/203e641a5b6a7c28720d23a373406356.jpg', ''),
+(32, '16381377 Colar Nome Zircônias Intercaladas Dourado', '12', 'https://jueri.com.br/img/fotos/cliente-sistema/2952/produto/2021/203e641a5b6a7c28720d23a373406356.jpg', '');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `sales_representatives`
+--
+
+CREATE TABLE `sales_representatives` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `avatar_url` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('superadmin','admin','user') NOT NULL DEFAULT 'user',
+  `company_id` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `users`
+--
+
+INSERT INTO `users` (`id`, `username`, `password`, `role`, `company_id`, `created_at`) VALUES
+(1, 'admin', '$2y$10$.8jvxaPDkaaOtuI0ffIth.02YiLIyBbfpimOIgPBlYPqsqBu1Yp1O', 'admin', 0, '2025-04-21 19:04:50'),
+(5, 'estoque', '$2y$10$cHBFjOVK8ecOOVlkPl.wAuVvqo0F0GkI5pFLeYGFvN0Qe6OwvdOcy', 'user', 4, '2025-05-01 17:05:29'),
+(6, 'dilimacentro', '$2y$10$c1s785OhOhiQ7Oxbc7FoM.pn.HqBLZBY0AeTGjl6QtYTtyvmRJDi2', 'user', 3, '2025-05-01 17:39:46'),
+(7, 'lays', '$2y$10$6mri2v9S3cJ1mWKXUvmRjeM6KlZKEtep0s7io32wuaQ/TSLgPL9ve', 'admin', 4, '2025-05-02 14:46:20'),
+(8, 'showroom', '$2y$10$w5fA5Nlx2ZIj/7UeNEj4ceWJqoChhYtli4HgpQd/0YQedsBIhv5nm', 'user', 4, '2025-05-02 17:44:45'),
+(9, 'ramon', '$2y$10$NlKSVdQWTlHNekcV6EKX3eTHjobepn6iFIoYjac9myGum6JN2i6N6', 'admin', 4, '2025-05-08 18:10:27');
+
+--
+-- Índices para tabelas despejadas
+--
+
+--
+-- Índices de tabela `companies`
+--
+ALTER TABLE `companies`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices de tabela `model_variations`
+--
+ALTER TABLE `model_variations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `model_id` (`model_id`);
+
+--
+-- Índices de tabela `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `model_id` (`model_id`),
+  ADD KEY `company_id` (`company_id`);
+
+--
+-- Índices de tabela `product_models`
+--
+ALTER TABLE `product_models`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices de tabela `sales_representatives`
+--
+ALTER TABLE `sales_representatives`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Índices de tabela `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`),
+  ADD KEY `company_id` (`company_id`);
+
+--
+-- AUTO_INCREMENT para tabelas despejadas
+--
+
+--
+-- AUTO_INCREMENT de tabela `companies`
+--
+ALTER TABLE `companies`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de tabela `model_variations`
+--
+ALTER TABLE `model_variations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT de tabela `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+
+--
+-- AUTO_INCREMENT de tabela `product_models`
+--
+ALTER TABLE `product_models`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=164;
+
+--
+-- AUTO_INCREMENT de tabela `sales_representatives`
+--
+ALTER TABLE `sales_representatives`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- Restrições para tabelas despejadas
+--
+
+--
+-- Restrições para tabelas `model_variations`
+--
+ALTER TABLE `model_variations`
+  ADD CONSTRAINT `model_variations_ibfk_1` FOREIGN KEY (`model_id`) REFERENCES `product_models` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`model_id`) REFERENCES `product_models` (`id`),
+  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  ADD CONSTRAINT `orders_ibfk_4` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Restrições para tabelas `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE SET NULL;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
