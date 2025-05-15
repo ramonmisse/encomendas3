@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Pedido não encontrado');
         }
 
-        // Verifica permissão
+        // Verifica permissão - admin pode editar qualquer pedido
         if ($_SESSION['role'] !== 'admin' && $order['company_id'] != $_SESSION['company_id']) {
             throw new Exception('Sem permissão para editar este pedido');
         }
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE id = ?";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
+        $success = $stmt->execute([
             $clientName,
             $modelId,
             $deliveryDateTime,
@@ -59,6 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notes,
             $id
         ]);
+
+        if (!$success) {
+            throw new Exception('Erro ao atualizar pedido no banco de dados');
+        }
 
         // Gerencia upload de novas imagens
         if (!empty($_FILES['images']['name'][0])) {
@@ -89,21 +93,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $pdo->commit();
-        $_SESSION['success'] = 'Pedido atualizado com sucesso!';
-        
-        echo "<script>
-                alert('Pedido atualizado com sucesso!');
-                window.location.href = '../index.php?page=home&tab=orders';
-              </script>";
+        echo json_encode(['success' => true, 'message' => 'Pedido atualizado com sucesso!']);
         exit;
 
     } catch (Exception $e) {
         $pdo->rollBack();
-        $_SESSION['error'] = 'Erro ao atualizar pedido: ' . $e->getMessage();
-        header('Location: ../index.php?page=home&tab=orders');
+        echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
         exit;
     }
 }
 
-header('Location: ../index.php?page=home&tab=orders');
+header('Location: ../index.php?page=orders');
 exit;
