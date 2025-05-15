@@ -331,7 +331,7 @@ $orders = $result['data'];
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Criado por:</strong> ${data.user || 'N/A'}</p>
-                            <p><strong>Cliente:</strong> ${data.client_name || 'N/A'}</p>
+                            <p><strong>Cliente:</strong> ${data.client || 'N/A'}</p>
                             <p><strong>Modelo:</strong> ${data.model || 'N/A'}</p>
                             <p><strong>Referência:</strong> ${data.reference || 'N/A'}</p>
                         </div>

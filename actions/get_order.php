@@ -1,4 +1,3 @@
-
 <?php
 require_once '../includes/config.php';
 require_once '../includes/functions.php';
@@ -25,7 +24,7 @@ try {
             u.username as user,
             m.name as model,
             m.reference as reference,
-            o.client_name,
+        o.client_name as client,
             o.metal_type,
             o.delivery_date,
             o.status,
