@@ -361,6 +361,7 @@ $orders = $result['data'];
                         </div>
                     ` : ''}
                 `;
+                new bootstrap.Modal(document.getElementById('viewOrderModal')).show();
             });
     }
 
@@ -373,10 +374,6 @@ $orders = $result['data'];
             'Entregue': 'bg-secondary'
         };
         return statusColors[status] || 'bg-secondary';
-    }
-                `;
-                new bootstrap.Modal(document.getElementById('viewOrderModal')).show();
-            });
     }
 
     function editOrder(orderId) {
