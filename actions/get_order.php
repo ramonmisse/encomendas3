@@ -25,14 +25,14 @@ try {
             u.username as user,
             m.name as model,
             m.reference as reference,
-        o.client_name as client,
+            o.client_name as client,
             o.metal_type,
             o.delivery_date,
             o.status,
             o.image_urls,
             o.notes
         FROM orders o
-        LEFT JOIN users u ON o.sales_representative_id = u.id
+        LEFT JOIN users u ON o.user_id = u.id
         LEFT JOIN product_models m ON o.model_id = m.id
         WHERE o.id = ?
     ");
