@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $clientName = sanitizeInput($_POST['client_name'] ?? '');
         $modelId = (int)($_POST['model_id'] ?? 0);
         $deliveryDate = sanitizeInput($_POST['delivery_date'] ?? '');
-        $deliveryTime = sanitizeInput($_POST['delivery_time'] ?? '00:00');
+        $deliveryTime = '00:00'; // Hora padrão
         $metalType = sanitizeInput($_POST['metal_type'] ?? '');
         $status = sanitizeInput($_POST['status'] ?? 'Em produção');
         $notes = sanitizeInput($_POST['notes'] ?? '');
