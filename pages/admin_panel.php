@@ -2,11 +2,7 @@
 // Get active admin tab from query string or set default to 'models'
 $adminTab = isset($_GET['admin_tab']) ? $_GET['admin_tab'] : 'models';
 
-//Check for admin permissions
-if ($_SESSION['role'] !== 'admin') {
-    header('Location: index.php');
-    exit;
-}
+// All users have admin access
 
 // Get search parameters and current page
 $modelSearch = isset($_GET['model_search']) ? $_GET['model_search'] : '';
@@ -31,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_company'])) {
 // Add user
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
     $hashedPassword = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO users (username, password, role, company_id) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$_POST['username'], $hashedPassword, $_POST['role'], $_POST['company_id']]);
+    $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+    $stmt->execute([$_POST['username'], $hashedPassword]);
     header('Location: index.php?page=admin_panel');
     exit;
 }
