@@ -1,4 +1,4 @@
-modules = ["php-8.2", "web"]
+modules = ["php-8.2", "web", "postgresql-16"]
 run = "php index.php"
 
 [nix]
