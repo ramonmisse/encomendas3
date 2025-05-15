@@ -2,11 +2,7 @@
 // Start session for state management
 session_start();
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id']) && $_GET['page'] != 'login') {
-    header('Location: index.php?page=login');
-    exit;
-}
+// No permission checks needed
 
 // Check if the database needs to be installed
 $dbConfigFile = 'includes/config.php';
@@ -33,12 +29,7 @@ if ($dbInstalled) {
             include 'pages/order_form.php';
             break;
         case 'admin':
-            // Check if user is admin
-            if ($_SESSION['role'] === 'admin') {
-                include 'pages/admin_panel.php';
-            } else {
-                header('Location: index.php');
-            }
+            include 'pages/admin_panel.php';
             break;
         default:
             include 'pages/home.php';

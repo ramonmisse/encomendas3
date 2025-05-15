@@ -9,19 +9,8 @@
 function getOrders(PDO $pdo, array $filters = [], int $page = 1, int $perPage = 20): array
 {
     try {
-        // Determine session values
-        $role      = $_SESSION['role'] ?? null;
-        $companyId = isset($_SESSION['company_id']) ? (int) $_SESSION['company_id'] : null;
-        $isGlobal  = ($role === 'admin' && $companyId === 0);
-
         $where  = [];
         $params = [];
-
-        // Apply company filter for non-global admins
-        if (! $isGlobal) {
-            $where[]  = "o.company_id = ?";
-            $params[] = $companyId;
-        }
 
         // Date filters
         if (!empty($filters['start_date'])) {
@@ -108,21 +97,9 @@ SQL;
  */
 function getOrderById(PDO $pdo, int $orderId)
 {
-    // Session and permission
-    $role      = $_SESSION['role'] ?? null;
-    $companyId = isset($_SESSION['company_id']) ? (int) $_SESSION['company_id'] : null;
-    $isGlobal  = ($role === 'admin' && $companyId === 0);
-
-    if ($isGlobal) {
-        $sql  = 'SELECT * FROM orders WHERE id = ?';
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$orderId]);
-    } else {
-        $sql  = 'SELECT * FROM orders WHERE id = ? AND company_id = ?';
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$orderId, $companyId]);
-    }
-
+    $sql  = 'SELECT * FROM orders WHERE id = ?';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$orderId]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 

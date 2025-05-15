@@ -3,18 +3,7 @@ session_start();
 require_once '../includes/config.php';
 require_once '../includes/functions.php';
 
-// Pega company_id como inteiro
-$companyId = isset($_SESSION['company_id']) ? (int)$_SESSION['company_id'] : null;
-
-// Detecta se é admin global (company_id = 0)
-$isGlobalAdmin = (
-    isset($_SESSION['role']) &&
-    $_SESSION['role'] === 'admin' &&
-    $companyId === 0
-);
-
-// Debug
-error_log('SESSION: ' . print_r($_SESSION, true));
+// No permission checks needed
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
