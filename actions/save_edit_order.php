@@ -43,38 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Sem permissão para editar este pedido');
         }
 
-        // Atualiza o pedido
-        $sql = "UPDATE orders SET 
-                client_name = ?,
-                model_id = ?,
-                delivery_date = ?,
-                delivery_time = ?,
-                metal_type = ?,
-                status = ?,
-                notes = ?
-                WHERE id = ?";
-
-        $stmt = $pdo->prepare($sql);
-        $success = $stmt->execute([
-            $clientName,
-            $modelId,
-            $deliveryDate,
-            $deliveryTime,
-            $metalType,
-            $status,
-            $notes,
-            $id
-        ]);
-
-        if (!$success) {
-            $errorInfo = $stmt->errorInfo();
-            throw new Exception("Erro SQL: {$errorInfo[0]} - {$errorInfo[2]}");
-        }
-
-        // Gerencia upload de novas imagens
+        // Processa novas imagens
+        $uploadedFiles = [];
         if (!empty($_FILES['images']['name'][0])) {
             $uploadDir = '../uploads/';
-            $uploadedFiles = [];
             
             foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
                 if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
@@ -91,10 +63,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!empty($uploadedFiles)) {
                 $currentImages = json_decode($order['image_urls'], true) ?: [];
                 $allImages = array_merge($currentImages, $uploadedFiles);
-                
-                $stmt = $pdo->prepare("UPDATE orders SET image_urls = ? WHERE id = ?");
-                $stmt->execute([json_encode($allImages), $id]);
+                $imageUrls = json_encode($allImages);
             }
+        }
+
+        // Atualiza o pedido
+        $sql = "UPDATE orders SET 
+                client_name = ?,
+                model_id = ?,
+                delivery_date = ?,
+                delivery_time = ?,
+                metal_type = ?,
+                status = ?,
+                notes = ?" .
+                (!empty($uploadedFiles) ? ", image_urls = ?" : "") .
+                " WHERE id = ?";
+
+        $params = [
+            $clientName,
+            $modelId,
+            $deliveryDate,
+            $deliveryTime,
+            $metalType,
+            $status,
+            $notes
+        ];
+
+        if (!empty($uploadedFiles)) {
+            $params[] = $imageUrls;
+        }
+        $params[] = $id;
+
+        $stmt = $pdo->prepare($sql);
+        $success = $stmt->execute($params);
+
+        if (!$success) {
+            $errorInfo = $stmt->errorInfo();
+            throw new Exception("Erro SQL: {$errorInfo[0]} - {$errorInfo[2]}");
         }
 
         $pdo->commit();
