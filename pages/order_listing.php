@@ -98,11 +98,11 @@ $orders = $result['data'];
                 <thead>
                     <tr>
                         <th>#ID</th>
+                        <th>Data do Pedido</th>
                         <th>Criado por</th>
                         <th>Cliente</th>
-                        <th>Modelo</th>
                         <th>Referência</th>
-                        <th>Tipo de Metal</th>
+                        <th>Modelo</th>
                         <th>Status</th>
                         <th>Data de Entrega</th>
                         <th>Imagem</th>
@@ -120,11 +120,11 @@ $orders = $result['data'];
                         <?php foreach ($orders as $order): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($order['id']); ?></td>
-                                <td><?php echo htmlspecialchars($order['username'] ?? 'N/A'); ?></td>
+                                <td><?php echo formatDate($order['created_at']); ?></td>
+                                <td><?php echo htmlspecialchars($order['user'] ?? 'N/A'); ?></td>
                                 <td><?php echo isset($order['client']) ? htmlspecialchars($order['client']) : 'N/A'; ?></td>
-                                <td><?php echo htmlspecialchars($order['model']); ?></td>
                                 <td><?php echo htmlspecialchars($order['reference'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($order['metal_type']); ?></td>
+                                <td><?php echo htmlspecialchars($order['model']); ?></td>
                                 <td>
                                     <?php
                                     $statusColors = [
