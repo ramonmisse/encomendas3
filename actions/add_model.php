@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validate and sanitize inputs
         $modelData = [
             'name' => sanitizeInput($_POST['name'] ?? ''),
+            'reference' => sanitizeInput($_POST['reference'] ?? ''),
             'image_url' => sanitizeInput($_POST['image_url'] ?? ''),
             'description' => sanitizeInput($_POST['description'] ?? '')
         ];

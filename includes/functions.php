@@ -6,84 +6,96 @@
  * @param array $filters Optional filters (start_date, end_date, model_id)
  * @return array Array of orders
  */
-function getOrders($pdo, $filters = [], $page = 1, $perPage = 20) {
+function getOrders(PDO $pdo, array $filters = [], int $page = 1, int $perPage = 20): array
+{
     try {
-        $where = [];
+        // Determine session values
+        $role      = $_SESSION['role'] ?? null;
+        $companyId = isset($_SESSION['company_id']) ? (int) $_SESSION['company_id'] : null;
+        $isGlobal  = ($role === 'admin' && $companyId === 0);
+
+        $where  = [];
         $params = [];
 
-        // Add company filter if user is not admin
-        if (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin' && isset($_SESSION['company_id'])) {
-            $where[] = "o.company_id = ?";
-            $params[] = $_SESSION['company_id'];
+        // Apply company filter for non-global admins
+        if (! $isGlobal) {
+            $where[]  = "o.company_id = ?";
+            $params[] = $companyId;
         }
 
-        // Base query
-        $sql = "SELECT o.*, m.name as model, u.username, o.client_name as client, c.name as company_name 
-               FROM orders o 
-               JOIN product_models m ON o.model_id = m.id 
-               JOIN users u ON o.user_id = u.id
-               JOIN companies c ON o.company_id = c.id";
-
-        // Add date filters
+        // Date filters
         if (!empty($filters['start_date'])) {
-            $where[] = "o.delivery_date >= ?"; 
+            $where[]  = "o.delivery_date >= ?";
             $params[] = $filters['start_date'];
         }
-
         if (!empty($filters['end_date'])) {
-            $where[] = "o.delivery_date <= ?"; 
+            $where[]  = "o.delivery_date <= ?";
             $params[] = $filters['end_date'];
         }
 
-        // Add model filter
+        // Model filter
         if (!empty($filters['model_id'])) {
-            $where[] = "o.model_id = ?"; 
+            $where[]  = "o.model_id = ?";
             $params[] = $filters['model_id'];
         }
 
-        // Add status filter
+        // Status filter
         if (!empty($filters['status'])) {
-            $where[] = "o.status = ?";
+            $where[]  = "o.status = ?";
             $params[] = $filters['status'];
         }
 
-        // Add WHERE clause if we have filters
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(" AND ", $where);
+        // Build base SQL
+        $sql = <<<SQL
+SELECT
+    o.*,
+    m.name       AS model,
+    m.reference  AS reference,
+    u.username   AS user,
+    o.client_name AS client,
+    c.name       AS company_name
+FROM orders o
+JOIN product_models m ON o.model_id = m.id
+JOIN users u          ON o.user_id = u.id
+JOIN companies c      ON o.company_id = c.id
+SQL;
+        // Append WHERE
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
-
-        // Add order by
-        $sql .= " ORDER BY o.created_at DESC";
-
-        // Add LIMIT for pagination
+        // Order, pagination
+        $sql .= ' ORDER BY o.created_at DESC';
         $offset = ($page - 1) * $perPage;
-        $sql .= " LIMIT " . $perPage . " OFFSET " . $offset;
+        $sql   .= " LIMIT {$perPage} OFFSET {$offset}";
 
-
-        // Count total orders for pagination
-        $countSql = "SELECT COUNT(*) FROM orders o";
-        if (!empty($where)) {
-            $countSql .= " WHERE " . implode(" AND ", $where);
+        // Count total
+        $countSql = 'SELECT COUNT(*) FROM orders o';
+        if ($where) {
+            $countSql .= ' WHERE ' . implode(' AND ', $where);
         }
         $countStmt = $pdo->prepare($countSql);
         $countStmt->execute($params);
-        $total = $countStmt->fetchColumn();
+        $total = (int) $countStmt->fetchColumn();
 
-
-        // Prepare and execute the statement
+        // Fetch data
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return [
-            'data' => $stmt->fetchAll(),
-            'total' => $total,
-            'pages' => ceil($total / $perPage),
-            'current_page' => $page
+            'data'         => $data,
+            'total'        => $total,
+            'pages'        => (int) ceil($total / $perPage),
+            'current_page' => $page,
         ];
-    } catch(PDOException $e) {
-        // For development, show error. For production, log error and show generic message
-        error_log('Error fetching orders: ' . $e->getMessage());
-        return [];
+    } catch (PDOException $e) {
+        error_log('Error in getOrders: ' . $e->getMessage());
+        return [
+            'data'         => [],
+            'total'        => 0,
+            'pages'        => 0,
+            'current_page' => $page,
+        ];
     }
 }
 
@@ -94,22 +106,25 @@ function getOrders($pdo, $filters = [], $page = 1, $perPage = 20) {
  * @param int $id Order ID
  * @return array|false Order data or false if not found
  */
-function getOrderById($pdo, $id) {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT o.*, 
-                   m.name as model_name
-            FROM orders o
-            JOIN product_models m ON o.model_id = m.id
-            WHERE o.id = ?
-        ");
-        $stmt->execute([$id]);
-        return $stmt->fetch();
-    } catch(PDOException $e) {
-        return false;
-    }
-}
+function getOrderById(PDO $pdo, int $orderId)
+{
+    // Session and permission
+    $role      = $_SESSION['role'] ?? null;
+    $companyId = isset($_SESSION['company_id']) ? (int) $_SESSION['company_id'] : null;
+    $isGlobal  = ($role === 'admin' && $companyId === 0);
 
+    if ($isGlobal) {
+        $sql  = 'SELECT * FROM orders WHERE id = ?';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$orderId]);
+    } else {
+        $sql  = 'SELECT * FROM orders WHERE id = ? AND company_id = ?';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$orderId, $companyId]);
+    }
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 /**
  * Get all product models
@@ -117,14 +132,71 @@ function getOrderById($pdo, $id) {
  * @param PDO $pdo Database connection
  * @return array Array of product models
  */
-function getProductModels($pdo) {
+function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $perPage = 20): array
+{
+    // Garante que o PDO lance exceções em erros de SQL
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Normaliza valores de página e itens por página
+    $page    = max(1, $page);
+    $perPage = max(1, $perPage);
+    $offset  = ($page - 1) * $perPage;
+
+    // Monta cláusula WHERE e parâmetros
+    $whereClauses = [];
+    $params       = [];
+
+    if ($search !== '') {
+        $whereClauses[]     = '(name LIKE :search OR reference LIKE :search)';
+        $params[':search'] = "%{$search}%";
+    }
+
+    $whereSql = $whereClauses
+        ? 'WHERE ' . implode(' AND ', $whereClauses)
+        : '';
+
     try {
-        $stmt = $pdo->query("SELECT * FROM product_models ORDER BY name");
-        return $stmt->fetchAll();
-    } catch(PDOException $e) {
-        return [];
+        // 1) Total de registros
+        $countSql  = "SELECT COUNT(*) FROM product_models {$whereSql}";
+        $countStmt = $pdo->prepare($countSql);
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        // 2) Buscar dados paginados
+        // Injecta diretamente LIMIT e OFFSET (já validados como inteiros)
+        $dataSql = "
+            SELECT *
+              FROM product_models
+            {$whereSql}
+            ORDER BY name
+            LIMIT {$perPage}
+            OFFSET {$offset}
+        ";
+        $dataStmt = $pdo->prepare($dataSql);
+        $dataStmt->execute($params);
+        $data = $dataStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // 3) Monta resposta
+        return [
+            'data'         => $data,
+            'total'        => $total,
+            'per_page'     => $perPage,
+            'current_page' => $page,
+            'pages'        => (int) ceil($total / $perPage),
+        ];
+    } catch (PDOException $e) {
+        // Em caso de erro, retorne estrutura vazia (ou lance exceção, se preferir)
+        return [
+            'data'         => [],
+            'total'        => 0,
+            'per_page'     => $perPage,
+            'current_page' => $page,
+            'pages'        => 0,
+            'error'        => $e->getMessage(), // opcional, para debug
+        ];
     }
 }
+
 
 /**
  * Add a new product model to the database

@@ -1,17 +1,39 @@
 <?php
-// Check if we're editing an existing order
+// ------------------------------------------------------------------
+// Ajuste este caminho para onde realmente está o seu functions.php
+// ------------------------------------------------------------------
+require_once __DIR__ . '/../includes/functions.php';
+
+// assume que $pdo já foi inicializado em functions.php ou antes
+// Exemplo em functions.php:
+//   <?php
+//   $pdo = new PDO(...);
+//   function getProductModels( ... ) { ... }
+
+// Captura página atual da query string (ou usa 1 por default)
+$page    = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+$perPage = 20;
+
+// Chama a função corretamente e extrai somente os dados
+$result   = getProductModels($pdo, '', $page, $perPage);
+$models   = $result['data'] ?? [];
+$total    = $result['total'] ?? 0;
+$pages    = $result['pages'] ?? 1;
+
+// Busca os representantes de vendas
+$salesReps = $pdo
+    ->query("SELECT * FROM users WHERE role = 'user' ORDER BY username")
+    ->fetchAll(PDO::FETCH_ASSOC);
+
+// Verifica se estamos editando um pedido existente
 $isEditing = false;
-$order = null;
+$order     = null;
 
 if (isset($_GET['id'])) {
-    $orderId = (int)$_GET['id'];
-    $order = getOrderById($pdo, $orderId);
+    $orderId   = (int) $_GET['id'];
+    $order     = getOrderById($pdo, $orderId);
     $isEditing = ($order !== false);
 }
-
-// Get product models and sales representatives from database
-$models = getProductModels($pdo);
-$salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY username")->fetchAll();
 ?>
 
 <div class="card">
@@ -115,6 +137,7 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                                              alt="<?php echo htmlspecialchars($model['name']); ?>" 
                                              class="img-fluid model-image">
                                         <p class="card-text fw-medium"><?php echo htmlspecialchars($model['name']); ?></p>
+                                        <p class="card-text small text-muted">Ref: <?php echo htmlspecialchars($model['reference']); ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -133,8 +156,8 @@ $salesReps = $pdo->query("SELECT * FROM users WHERE role = 'user' ORDER BY usern
                     <label for="metalType" class="form-label">Tipo de Metal</label>
                     <select class="form-select" id="metalType" name="metal_type" required>
                         <option value="" selected disabled>Selecione o tipo de metal</option>
-                        <option value="gold" <?php echo ($isEditing && $order['metal_type'] == 'gold') ? 'selected' : ''; ?>>Ouro</option>
-                        <option value="silver" <?php echo ($isEditing && $order['metal_type'] == 'silver') ? 'selected' : ''; ?>>Prata</option>
+                        <option value="gold" <?php echo ($isEditing && $order['metal_type'] == 'gold') ? 'selected' : ''; ?>>Banho de Ouro</option>
+                        <option value="silver" <?php echo ($isEditing && $order['metal_type'] == 'silver') ? 'selected' : ''; ?>>Banho de Prata</option>
                         <option value="not_applicable" <?php echo ($isEditing && $order['metal_type'] == 'not_applicable') ? 'selected' : ''; ?>>Não Aplicável</option>
                     </select>
                     <div class="invalid-feedback">Por favor, selecione um tipo de metal.</div>
