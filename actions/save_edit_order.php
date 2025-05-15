@@ -70,9 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Atualiza o pedido
         $sql = "UPDATE orders SET 
                 client_name = ?,
-                model_id = ?,
-                delivery_date = ?,
-                delivery_time = ?,
                 metal_type = ?,
                 status = ?,
                 notes = ?" .
@@ -81,9 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $params = [
             $clientName,
-            $modelId,
-            $deliveryDate,
-            $deliveryTime,
             $metalType,
             $status,
             $notes
