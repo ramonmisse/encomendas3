@@ -67,6 +67,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Comparar valores antigos com novos
+        $changes = [];
+        if ($order['client_name'] !== $clientName) {
+            $changes[] = "Cliente alterado de '{$order['client_name']}' para '$clientName'";
+        }
+        if ($order['metal_type'] !== $metalType) {
+            $changes[] = "Tipo de metal alterado de '{$order['metal_type']}' para '$metalType'";
+        }
+        if ($order['status'] !== $status) {
+            $changes[] = "Status alterado de '{$order['status']}' para '$status'";
+        }
+        if ($order['notes'] !== $notes) {
+            $changes[] = "Observações atualizadas";
+        }
+        
+        // Registrar alterações no log
+        if (!empty($changes)) {
+            $logMessage = "Alterações no pedido #$id:\n" . implode("\n", $changes);
+            error_log($logMessage);
+        }
+
         // Atualiza o pedido
         $sql = "UPDATE orders SET 
                 client_name = ?,
