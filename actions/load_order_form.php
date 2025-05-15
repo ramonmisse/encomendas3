@@ -47,6 +47,7 @@ $models = getProductModels($pdo);
                     <?php foreach ($models as $model): ?>
                         <option value="<?php echo isset($model['id']) ? $model['id'] : ''; ?>" 
                             <?php echo (isset($order['model_id']) && isset($model['id']) && $order['model_id'] == $model['id']) ? 'selected' : ''; ?>>
+                            <?php echo isset($model['reference']) ? htmlspecialchars($model['reference']) : ''; ?> - 
                             <?php echo isset($model['name']) ? htmlspecialchars($model['name']) : ''; ?>
                         </option>
                     <?php endforeach; ?>
