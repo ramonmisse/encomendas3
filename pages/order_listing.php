@@ -58,7 +58,6 @@ $orders = $result['data'];
                     <option value="Entregue" <?php echo ($filters['status'] == 'Entregue') ? 'selected' : ''; ?>>Entregue</option>
                 </select>
             </div>
-            <?php if ($_SESSION['role'] === 'admin'): ?>
             <div class="col-md-3">
                 <label for="company_id" class="form-label">Empresa</label>
                 <select class="form-select" id="company_id" name="company_id">
@@ -70,7 +69,6 @@ $orders = $result['data'];
                     <?php endforeach; ?>
                 </select>
             </div>
-            <?php endif; ?>
             <div class="col-md-2 d-flex align-items-end">
                 <div class="d-flex gap-2 w-100">
                     <button type="submit" class="btn btn-primary flex-grow-1">
