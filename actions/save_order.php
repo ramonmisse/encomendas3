@@ -1,7 +1,13 @@
 <?php
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require_once '../includes/config.php';
 require_once '../includes/functions.php';
+
+// Log incoming data
+error_log('POST data: ' . print_r($_POST, true));
+error_log('SESSION data: ' . print_r($_SESSION, true));
 
 // Pega company_id como inteiro
 $companyId = isset($_SESSION['company_id']) ? (int)$_SESSION['company_id'] : null;
@@ -122,16 +128,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
             }
 
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-
-            $pdo->commit();
-            $_SESSION['success'] = 'Pedido atualizado com sucesso!';
-            echo "<script>
-                    alert('Pedido atualizado com sucesso!');
-                    window.location.href = '../index.php?page=home&tab=orders';
-                  </script>";
-            exit;
+            try {
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($params);
+                
+                if ($stmt->rowCount() > 0) {
+                    $pdo->commit();
+                    $_SESSION['success'] = 'Pedido atualizado com sucesso!';
+                    header('Location: ../index.php?page=home&tab=orders&status=success&message='.urlencode('Pedido atualizado com sucesso!'));
+                    exit;
+                } else {
+                    throw new Exception('Nenhuma alteração foi feita no pedido.');
+                }
+            } catch (PDOException $e) {
+                error_log('SQL Error: ' . $e->getMessage());
+                throw new Exception('Erro ao atualizar pedido: ' . $e->getMessage());
+            }
         }
 
         // Se for INSERT (idem antes)
