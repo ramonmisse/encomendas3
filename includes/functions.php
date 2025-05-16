@@ -143,18 +143,18 @@ function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $per
     try {
         $sql = "SELECT * FROM product_models";
         $params = [];
-        
+
         if (!empty($search)) {
             $sql .= " WHERE (name LIKE :search OR reference LIKE :search)";
             $params[':search'] = "%{$search}%";
         }
-        
+
         $sql .= " ORDER BY name";
-        
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         return [
             'data' => $data,
             'total' => count($data)
@@ -164,42 +164,6 @@ function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $per
         return [
             'data' => [],
             'total' => 0
-        ];
-    }
-}
-        $total = (int) $countStmt->fetchColumn();
-
-        // 2) Buscar dados paginados
-        // Injecta diretamente LIMIT e OFFSET (já validados como inteiros)
-        $dataSql = "
-            SELECT *
-              FROM product_models
-            {$whereSql}
-            ORDER BY name
-            LIMIT {$perPage}
-            OFFSET {$offset}
-        ";
-        $dataStmt = $pdo->prepare($dataSql);
-        $dataStmt->execute($params);
-        $data = $dataStmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // 3) Monta resposta
-        return [
-            'data'         => $data,
-            'total'        => $total,
-            'per_page'     => $perPage,
-            'current_page' => $page,
-            'pages'        => (int) ceil($total / $perPage),
-        ];
-    } catch (PDOException $e) {
-        // Em caso de erro, retorne estrutura vazia (ou lance exceção, se preferir)
-        return [
-            'data'         => [],
-            'total'        => 0,
-            'per_page'     => $perPage,
-            'current_page' => $page,
-            'pages'        => 0,
-            'error'        => $e->getMessage(), // opcional, para debug
         ];
     }
 }
