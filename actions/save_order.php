@@ -156,7 +156,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle image uploads
         $imageUrls = [];
         if (!empty($_FILES['images'])) {
-            $uploadDir = '../uploads/';
+            // Check if directory exists, if not create it
+            $uploadDir = dirname(__DIR__) . '/uploads/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
             foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
                 if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
                     $fileName = time() . '_' . basename($_FILES['images']['name'][$key]);
@@ -164,7 +169,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     if (move_uploaded_file($tmp_name, $targetPath)) {
                         $imageUrls[] = 'uploads/' . $fileName;
+                        error_log("File uploaded successfully to: " . $targetPath);
+                    } else {
+                        error_log("Failed to move uploaded file: " . error_get_last()['message']);
                     }
+                } else {
+                    error_log("Upload error for file {$key}: " . $_FILES['images']['error'][$key]);
                 }
             }
         }
