@@ -153,6 +153,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               (user_id, company_id, client_name, delivery_date, model_id, metal_type, status, notes, image_urls, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         ");
+        // Handle image uploads
+        $imageUrls = [];
+        if (!empty($_FILES['images'])) {
+            $uploadDir = '../uploads/';
+            foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
+                if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
+                    $fileName = time() . '_' . basename($_FILES['images']['name'][$key]);
+                    $targetPath = $uploadDir . $fileName;
+                    
+                    if (move_uploaded_file($tmp_name, $targetPath)) {
+                        $imageUrls[] = 'uploads/' . $fileName;
+                    }
+                }
+            }
+        }
+
         $stmt->execute([
             $userId,
             $companyId,
@@ -162,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $metalType,
             $status,
             $notes,
-            null  // ou suas URLs
+            !empty($imageUrls) ? json_encode($imageUrls) : null
         ]);
 
         $pdo->commit();
