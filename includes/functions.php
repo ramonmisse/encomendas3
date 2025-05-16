@@ -166,9 +166,7 @@ function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $per
             'total' => 0
         ];
     }
-        $countSql  = "SELECT COUNT(*) FROM product_models {$whereSql}";
-        $countStmt = $pdo->prepare($countSql);
-        $countStmt->execute($params);
+}
         $total = (int) $countStmt->fetchColumn();
 
         // 2) Buscar dados paginados
