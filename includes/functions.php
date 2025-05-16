@@ -159,9 +159,13 @@ function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $per
             'data' => $data,
             'total' => count($data)
         ];
-
-    try {
-        // 1) Total de registros
+    } catch (PDOException $e) {
+        error_log('Error in getProductModels: ' . $e->getMessage());
+        return [
+            'data' => [],
+            'total' => 0
+        ];
+    }
         $countSql  = "SELECT COUNT(*) FROM product_models {$whereSql}";
         $countStmt = $pdo->prepare($countSql);
         $countStmt->execute($params);
