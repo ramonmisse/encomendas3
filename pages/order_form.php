@@ -15,10 +15,8 @@ $page    = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 $perPage = 20;
 
 // Chama a função corretamente e extrai somente os dados
-$result   = getProductModels($pdo, '', $page, $perPage);
-$models   = $result['data'] ?? [];
-$total    = $result['total'] ?? 0;
-$pages    = $result['pages'] ?? 1;
+$result = getProductModels($pdo);
+$models = $result['data'] ?? [];
 
 // Busca os representantes de vendas
 $salesReps = $pdo

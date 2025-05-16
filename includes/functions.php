@@ -138,28 +138,27 @@ function getOrderById(PDO $pdo, int $orderId)
  * @param PDO $pdo Database connection
  * @return array Array of product models
  */
-function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $perPage = 20): array
+function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $perPage = 1000): array
 {
-    // Garante que o PDO lance exceções em erros de SQL
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Normaliza valores de página e itens por página
-    $page    = max(1, $page);
-    $perPage = max(1, $perPage);
-    $offset  = ($page - 1) * $perPage;
-
-    // Monta cláusula WHERE e parâmetros
-    $whereClauses = [];
-    $params       = [];
-
-    if ($search !== '') {
-        $whereClauses[]     = '(name LIKE :search OR reference LIKE :search)';
-        $params[':search'] = "%{$search}%";
-    }
-
-    $whereSql = $whereClauses
-        ? 'WHERE ' . implode(' AND ', $whereClauses)
-        : '';
+    try {
+        $sql = "SELECT * FROM product_models";
+        $params = [];
+        
+        if (!empty($search)) {
+            $sql .= " WHERE (name LIKE :search OR reference LIKE :search)";
+            $params[':search'] = "%{$search}%";
+        }
+        
+        $sql .= " ORDER BY name";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return [
+            'data' => $data,
+            'total' => count($data)
+        ];
 
     try {
         // 1) Total de registros
