@@ -23,7 +23,7 @@ $salesReps = getSalesReps($pdo);
 $models = getProductModels($pdo);
 ?>
 
-<form id="editOrderForm" action="actions/save_order.php" method="post" enctype="multipart/form-data">
+<form id="editOrderForm" action="actions/save_edit_order.php" method="post" enctype="multipart/form-data">
     <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
 
     <div class="row mb-3">
@@ -43,24 +43,32 @@ $models = getProductModels($pdo);
         <div class="col-md-6">
             <label for="model_id" class="form-label">Modelo</label>
             <select class="form-select" id="model_id" name="model_id" required>
-                <?php foreach ($models as $model): ?>
-                    <option value="<?php echo $model['id']; ?>" <?php echo $order['model_id'] == $model['id'] ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($model['name']); ?>
-                    </option>
-                <?php endforeach; ?>
+                <?php if (!empty($models)): ?>
+                    <?php foreach ($models['data'] as $model): ?>
+                        <option value="<?php echo isset($model['id']) ? $model['id'] : ''; ?>" 
+                            <?php echo (isset($order['model_id']) && isset($model['id']) && $order['model_id'] == $model['id']) ? 'selected' : ''; ?>>
+                            <?php echo isset($model['reference']) ? htmlspecialchars($model['reference']) : ''; ?> - 
+                            <?php echo isset($model['name']) ? htmlspecialchars($model['name']) : ''; ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </select>
         </div>
 
         <div class="col-md-6">
             <label for="metal_type" class="form-label">Tipo de Metal</label>
-            <input type="text" class="form-control" id="metal_type" name="metal_type" value="<?php echo htmlspecialchars($order['metal_type']); ?>" required>
+            <select class="form-select" id="metal_type" name="metal_type" required>
+                <option value="gold" <?php echo $order['metal_type'] == 'gold' ? 'selected' : ''; ?>>Banho de Ouro</option>
+                <option value="silver" <?php echo $order['metal_type'] == 'silver' ? 'selected' : ''; ?>>Banho de Prata</option>
+                <option value="not_applicable" <?php echo $order['metal_type'] == 'not_applicable' ? 'selected' : ''; ?>>Não Aplicável</option>
+            </select>
         </div>
     </div>
 
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="delivery_date" class="form-label">Data de Entrega</label>
-            <input type="date" class="form-control" id="delivery_date" name="delivery_date" value="<?php echo $order['delivery_date']; ?>" required>
+            <input type="date" class="form-control" id="delivery_date" name="delivery_date" value="<?php echo date('Y-m-d', strtotime($order['delivery_date'])); ?>" required>
         </div>
         <div class="col-md-6">
             <label for="status" class="form-label">Status</label>
@@ -84,8 +92,65 @@ $models = getProductModels($pdo);
         <input type="file" class="form-control" id="images" name="images[]" multiple accept="image/*">
     </div>
 
+    <div id="existingImages" class="row">
+        <?php if (!empty($order['image_urls'])): ?>
+            <?php $images = json_decode($order['image_urls'], true); ?>
+            <?php if (is_array($images)): ?>
+                <?php foreach ($images as $index => $image): ?>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="card h-100">
+                            <img src="<?php echo htmlspecialchars($image); ?>" class="card-img-top" alt="Preview">
+                            <input type="hidden" name="existing_images[]" value="<?php echo htmlspecialchars($image); ?>">
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        <?php endif; ?>
+    </div>
+
     <div class="text-end">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
     </div>
 </form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const editOrderModal = document.getElementById('editOrderModal');
+
+    if (editOrderModal) {
+      editOrderModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const orderId = button.getAttribute('data-order-id');
+
+        if (orderId) {
+          loadEditOrderForm(orderId);
+        }
+      });
+    }
+
+    function loadEditOrderForm(orderId) {
+      const modalBody = editOrderModal.querySelector('.modal-body');
+      modalBody.innerHTML = '<p>Carregando...</p>';
+
+      fetch(`get_edit_order_form.php?id=${orderId}`)
+        .then(response => response.text())
+        .then(data => {
+          modalBody.innerHTML = data;
+
+          // Adicionar handler para remoção de imagens
+          modalBody.querySelectorAll('.remove-image').forEach(button => {
+            button.addEventListener('click', function() {
+              this.closest('.col-6').remove();
+            });
+          });
+        })
+        .catch(error => {
+          console.error('Error loading order form:', error);
+          alert('Erro ao carregar o formulário de edição');
+        });
+    }
+
+    
+  });
+</script>

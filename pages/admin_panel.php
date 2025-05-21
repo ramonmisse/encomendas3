@@ -13,8 +13,9 @@ $modelSearch = isset($_GET['model_search']) ? $_GET['model_search'] : '';
 $currentPage = isset($_GET['pg']) ? max(1, intval($_GET['pg'])) : 1;
 
 // Get product models with search and pagination
-$result = getProductModels($pdo, $modelSearch, $currentPage);
+$result = getAdminProductModels($pdo, $modelSearch, $currentPage);
 $models = $result['data'];
+$totalPages = $result['pages'];
 
 // Get companies and users
 $companies = $pdo->query("SELECT * FROM companies ORDER BY name")->fetchAll();
@@ -137,24 +138,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
                         </tbody>
                     </table>
                 </div>
-                <?php if ($result['pages'] > 1): ?>
+                <?php if ($totalPages > 1): ?>
                 <nav aria-label="Navegação da página" class="mt-4">
                     <ul class="pagination justify-content-center">
-                        <?php if ($result['current_page'] > 1): ?>
+                        <?php if ($currentPage > 1): ?>
                         <li class="page-item">
-                            <a class="page-link" href="?page=admin&admin_tab=models&pg=<?php echo ($result['current_page'] - 1); ?><?php echo !empty($modelSearch) ? '&model_search=' . urlencode($modelSearch) : ''; ?>">Anterior</a>
+                            <a class="page-link" href="?page=admin&admin_tab=models&pg=<?php echo ($currentPage - 1); ?><?php echo !empty($modelSearch) ? '&model_search=' . urlencode($modelSearch) : ''; ?>">Anterior</a>
                         </li>
                         <?php endif; ?>
-                        
-                        <?php for ($i = 1; $i <= $result['pages']; $i++): ?>
-                        <li class="page-item <?php echo $i === $result['current_page'] ? 'active' : ''; ?>">
+
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?php echo $i === $currentPage ? 'active' : ''; ?>">
                             <a class="page-link" href="?page=admin&admin_tab=models&pg=<?php echo $i; ?><?php echo !empty($modelSearch) ? '&model_search=' . urlencode($modelSearch) : ''; ?>"><?php echo $i; ?></a>
                         </li>
                         <?php endfor; ?>
-                        
-                        <?php if ($result['current_page'] < $result['pages']): ?>
+
+                        <?php if ($currentPage < $totalPages): ?>
                         <li class="page-item">
-                            <a class="page-link" href="?page=admin&admin_tab=models&pg=<?php echo ($result['current_page'] + 1); ?><?php echo !empty($modelSearch) ? '&model_search=' . urlencode($modelSearch) : ''; ?>">Próximo</a>
+                            <a class="page-link" href="?page=admin&admin_tab=models&pg=<?php echo ($currentPage + 1); ?><?php echo !empty($modelSearch) ? '&model_search=' . urlencode($modelSearch) : ''; ?>">Próximo</a>
                         </li>
                         <?php endif; ?>
                     </ul>

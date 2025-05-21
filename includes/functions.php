@@ -18,9 +18,15 @@ function getOrders(PDO $pdo, array $filters = [], int $page = 1, int $perPage = 
         $params = [];
 
         // Apply company filter for non-global admins
-        if (! $isGlobal) {
-            $where[]  = "o.company_id = ?";
+        if (!$isGlobal && !empty($filters['company_id'])) {
+            $where[] = "o.company_id = ?";
+            $params[] = $filters['company_id'];
+        } elseif (!$isGlobal) {
+            $where[] = "o.company_id = ?";
             $params[] = $companyId;
+        } elseif ($isGlobal && !empty($filters['company_id'])) {
+            $where[] = "o.company_id = ?";
+            $params[] = $filters['company_id'];
         }
 
         // Date filters
@@ -132,67 +138,74 @@ function getOrderById(PDO $pdo, int $orderId)
  * @param PDO $pdo Database connection
  * @return array Array of product models
  */
-function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $perPage = 20): array
+function getProductModels(PDO $pdo, string $search = '', int $page = 1, int $perPage = 1000): array
 {
-    // Garante que o PDO lance exceções em erros de SQL
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Normaliza valores de página e itens por página
-    $page    = max(1, $page);
-    $perPage = max(1, $perPage);
-    $offset  = ($page - 1) * $perPage;
-
-    // Monta cláusula WHERE e parâmetros
-    $whereClauses = [];
-    $params       = [];
-
-    if ($search !== '') {
-        $whereClauses[]     = '(name LIKE :search OR reference LIKE :search)';
-        $params[':search'] = "%{$search}%";
-    }
-
-    $whereSql = $whereClauses
-        ? 'WHERE ' . implode(' AND ', $whereClauses)
-        : '';
-
     try {
-        // 1) Total de registros
-        $countSql  = "SELECT COUNT(*) FROM product_models {$whereSql}";
-        $countStmt = $pdo->prepare($countSql);
-        $countStmt->execute($params);
-        $total = (int) $countStmt->fetchColumn();
+        $sql = "SELECT * FROM product_models";
+        $params = [];
 
-        // 2) Buscar dados paginados
-        // Injecta diretamente LIMIT e OFFSET (já validados como inteiros)
-        $dataSql = "
-            SELECT *
-              FROM product_models
-            {$whereSql}
-            ORDER BY name
-            LIMIT {$perPage}
-            OFFSET {$offset}
-        ";
-        $dataStmt = $pdo->prepare($dataSql);
-        $dataStmt->execute($params);
-        $data = $dataStmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!empty($search)) {
+            $sql .= " WHERE (name LIKE :search OR reference LIKE :search)";
+            $params[':search'] = "%{$search}%";
+        }
 
-        // 3) Monta resposta
+        $sql .= " ORDER BY name";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         return [
-            'data'         => $data,
-            'total'        => $total,
-            'per_page'     => $perPage,
-            'current_page' => $page,
-            'pages'        => (int) ceil($total / $perPage),
+            'data' => $data,
+            'total' => count($data)
         ];
     } catch (PDOException $e) {
-        // Em caso de erro, retorne estrutura vazia (ou lance exceção, se preferir)
+        error_log('Error in getProductModels: ' . $e->getMessage());
         return [
-            'data'         => [],
-            'total'        => 0,
-            'per_page'     => $perPage,
-            'current_page' => $page,
-            'pages'        => 0,
-            'error'        => $e->getMessage(), // opcional, para debug
+            'data' => [],
+            'total' => 0
+        ];
+    }
+}
+
+function getAdminProductModels(PDO $pdo, string $search = '', int $page = 1, int $perPage = 10): array
+{
+    try {
+        $sql = "SELECT * FROM product_models";
+        $params = [];
+
+        if (!empty($search)) {
+            $sql .= " WHERE (name LIKE :search OR reference LIKE :search)";
+            $params[':search'] = "%{$search}%";
+        }
+
+        // Get total before adding limit
+        $countStmt = $pdo->prepare($sql);
+        $countStmt->execute($params);
+        $total = $countStmt->rowCount();
+
+        // Add pagination
+        $sql .= " ORDER BY name LIMIT :limit OFFSET :offset";
+        $params[':limit'] = $perPage;
+        $params[':offset'] = ($page - 1) * $perPage;
+
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        
+        return [
+            'data' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+            'total' => $total,
+            'pages' => ceil($total / $perPage),
+            'current_page' => $page
+        ];
+    } catch (PDOException $e) {
+        error_log('Error in getProductModels: ' . $e->getMessage());
+        return [
+            'data' => [],
+            'total' => 0
         ];
     }
 }

@@ -43,9 +43,11 @@ $orders = $result['data'];
                     <option value="">Todos os Modelos</option>
                     <?php
                     $models = getProductModels($pdo);
-                    foreach ($models as $model) {
-                        $selected = ($filters['model_id'] == $model['id']) ? 'selected' : '';
-                        echo "<option value=\"{$model['id']}\" {$selected}>{$model['name']}</option>";
+                    if (!empty($models['data'])) {
+                        foreach ($models['data'] as $model) {
+                            $selected = ($filters['model_id'] == $model['id']) ? 'selected' : '';
+                            echo "<option value=\"{$model['id']}\" {$selected}>{$model['name']} - {$model['reference']}</option>";
+                        }
                     }
                     ?>
                 </select>
@@ -98,11 +100,11 @@ $orders = $result['data'];
                 <thead>
                     <tr>
                         <th>#ID</th>
+                        <th>Data do Pedido</th>
                         <th>Criado por</th>
                         <th>Cliente</th>
-                        <th>Modelo</th>
                         <th>Referência</th>
-                        <th>Tipo de Metal</th>
+                        <th>Modelo</th>
                         <th>Status</th>
                         <th>Data de Entrega</th>
                         <th>Imagem</th>
@@ -120,11 +122,11 @@ $orders = $result['data'];
                         <?php foreach ($orders as $order): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($order['id']); ?></td>
-                                <td><?php echo htmlspecialchars($order['username'] ?? 'N/A'); ?></td>
+                                <td><?php echo formatDate($order['created_at']); ?></td>
+                                <td><?php echo htmlspecialchars($order['user'] ?? 'N/A'); ?></td>
                                 <td><?php echo isset($order['client']) ? htmlspecialchars($order['client']) : 'N/A'; ?></td>
-                                <td><?php echo htmlspecialchars($order['model']); ?></td>
                                 <td><?php echo htmlspecialchars($order['reference'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($order['metal_type']); ?></td>
+                                <td><?php echo htmlspecialchars($order['model']); ?></td>
                                 <td>
                                     <?php
                                     $statusColors = [
@@ -151,7 +153,7 @@ $orders = $result['data'];
                                                 <i class="fas fa-image"></i>
                                             </button>
                                             <div class="hover-card-content">
-                                                <img src="<?php echo htmlspecialchars($firstImage); ?>" alt="Order reference" class="img-fluid rounded" onerror="this.onerror=null; this.src='assets/images/no-image.png'; this.alt='Image not found';">
+                                                <img src="<?php echo htmlspecialchars($firstImage); ?>" alt="Order reference" class="img-fluid rounded" onerror="this.onerror=null; this.src='/uploads/no-image.png'; this.alt='Image not found';">
                                             </div>
                                         </div>
                                         <?php else: ?>
@@ -320,21 +322,73 @@ $orders = $result['data'];
 </div>
 
 <script>
-    function viewOrder(orderId) {
-        fetch(`actions/get_order.php?id=${orderId}`)
-            .then(response => response.json())
-            .then(data => {
-                const modalBody = document.getElementById('viewOrderDetails');
-                modalBody.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Criado por:</strong> ${data.username}</p>
-                            <p><strong>Cliente:</strong> ${data.client_name}</p>
-                            <p><strong>Modelo:</strong> ${data.model_name}</p>
+    function showSuccessMessage(message) {
+        const modalHtml = `
+            <div class="modal fade" id="successModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Sucesso</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
+                        <div class="modal-body">
+                            <p>${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+        // Remove any existing success modal
+        const existingModal = document.getElementById('successModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Add new modal to the page
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Get the modal instance
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        
+        // Show the modal
+        successModal.show();
+        
+        // Add click event to close button
+        document.querySelector('#successModal .btn-primary').addEventListener('click', function () {
+            window.location.reload();
+        });
+    }
+
+    async function viewOrder(orderId) {
+        try {
+            const response = await fetch(`actions/get_order.php?id=${orderId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log('Order data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            const modalBody = document.getElementById('viewOrderDetails');
+            modalBody.innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <p><strong>ID do Pedido:</strong> ${data.id || 'N/A'}</p>
+                        <p><strong>Criado por:</strong> ${data.user || 'N/A'}</p>
+                        <p><strong>Cliente:</strong> ${data.client || 'N/A'}</p>
+                        <p><strong>Modelo:</strong> ${data.model || 'N/A'}</p>
+                        <p><strong>Referência:</strong> ${data.reference || 'N/A'}</p>
+                    </div>
                         <div class="col-md-6">
-                            <p><strong>Tipo de Metal:</strong> ${data.metal_type}</p>
-                            <p><strong>Data de Entrega:</strong> ${data.delivery_date}</p>
+                            <p><strong>Tipo de Metal:</strong> ${data.metal_type || 'N/A'}</p>
+                            <p><strong>Data de Entrega:</strong> ${data.delivery_date || 'N/A'}</p>
+                            <p><strong>Status:</strong> <span class="badge ${getStatusColor(data.status)}">${data.status || 'N/A'}</span></p>
                         </div>
                     </div>
                     ${data.notes ? `<div class="mt-3"><strong>Observações:</strong><p>${data.notes}</p></div>` : ''}
@@ -344,15 +398,37 @@ $orders = $result['data'];
                             <div class="row mt-2">
                                 ${JSON.parse(data.image_urls).map(url => `
                                     <div class="col-md-4 mb-2">
-                                        <img src="${url}" class="img-fluid rounded" alt="Imagem do pedido">
+                                        <div class="card h-100">
+                                            <img src="${url}" class="card-img-top" alt="Imagem do pedido" style="object-fit: cover; height: 200px;">
+                                            <div class="card-footer p-2 text-center">
+                                                <a href="${url}" download class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-download me-1"></i> Baixar
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
                     ` : ''}
                 `;
-                new bootstrap.Modal(document.getElementById('viewOrderModal')).show();
-            });
+                const modal = new bootstrap.Modal(document.getElementById('viewOrderModal'));
+                modal.show();
+        } catch (error) {
+            console.error('Error loading order details:', error);
+            alert('Erro ao carregar detalhes do pedido');
+        }
+    }
+
+    function getStatusColor(status) {
+        const statusColors = {
+            'Em produção': 'bg-primary',
+            'Gravado': 'bg-info',
+            'Separado': 'bg-warning',
+            'Enviado': 'bg-success',
+            'Entregue': 'bg-secondary'
+        };
+        return statusColors[status] || 'bg-secondary';
     }
 
     function editOrder(orderId) {
@@ -361,7 +437,34 @@ $orders = $result['data'];
             .then(response => response.text())
             .then(html => {
                 modalBody.innerHTML = html;
-                new bootstrap.Modal(document.getElementById('editOrderModal')).show();
+                const modal = new bootstrap.Modal(document.getElementById('editOrderModal'));
+                modal.show();
+                
+                // Add form submission handler
+                const form = modalBody.querySelector('form');
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('editOrderModal'));
+                            modal.hide();
+                            showSuccessMessage('Edição salva com sucesso!');
+                        } else {
+                            alert(result.message || 'Erro ao salvar pedido');
+                        }
+                    } catch (error) {
+                        console.error('Error saving order:', error);
+                        alert(error.message || 'Erro ao salvar pedido');
+                    }
+                });
             })
             .catch(error => {
                 console.error('Error loading order form:', error);

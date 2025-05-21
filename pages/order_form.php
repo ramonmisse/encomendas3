@@ -15,10 +15,8 @@ $page    = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 $perPage = 20;
 
 // Chama a função corretamente e extrai somente os dados
-$result   = getProductModels($pdo, '', $page, $perPage);
-$models   = $result['data'] ?? [];
-$total    = $result['total'] ?? 0;
-$pages    = $result['pages'] ?? 1;
+$result = getProductModels($pdo);
+$models = $result['data'] ?? [];
 
 // Busca os representantes de vendas
 $salesReps = $pdo
@@ -52,7 +50,7 @@ if (isset($_GET['id'])) {
                 Nenhum modelo de produto cadastrado. Por favor, <a href="index.php?page=home&tab=admin&admin_tab=models" class="alert-link">adicione um modelo</a> antes de criar um pedido.
             </div>
         <?php else: ?>
-            <form action="actions/save_order.php" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            <form action="actions/<?php echo $isEditing ? 'save_edit_order.php' : 'save_order.php'; ?>" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                 <?php if ($isEditing): ?>
                     <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
                 <?php endif; ?>
